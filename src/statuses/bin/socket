@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+
+const path = require("path");
+const fs = require("fs");
+
+const appInit = require("../app");
+const register = require("../shared/socket");
+
+const moduleName = path.dirname(path.join(__dirname, "..", ".env.example")).split(path.sep).pop();
+
+(function () {
+    const socketPath = path.join(__dirname, "..", "socket");
+
+    if (!fs.existsSync(socketPath)) {
+        return console.error(`Module "${moduleName}" does not hav socket part.`);
+    }
+
+    appInit(function () {
+        register(moduleName);
+    });
+})();

@@ -1,0 +1,13 @@
+.app-dirs
+.server
+node_modules
+
+.gitignore
+package-lock.json
+yarn.lock
+README.md
+
+src/modules/*/database/seeds/static
+src/modules/*/public
+src/modules/*/node_modules
+src/modules/*/package-lock.json

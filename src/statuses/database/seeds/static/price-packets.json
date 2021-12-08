@@ -1,0 +1,85 @@
+[
+    {
+        "name" : "starter",
+        "description" : "Some description",
+
+        "monthlyPrice" : 0,
+        "adSpentLimit" : 4000,
+        "workspaceLimit" : 1,
+        "freeDaysCount" : null,
+        "memberLimit" : 1,
+        "campaignLimit" : -10,
+
+        "realTimeDateSync" : false,
+        "emailSupport" : false,
+        "chatSupport": false,
+        "customDashboards": false,
+        "customFeatures": false,
+        "unifiedReporting" : true,
+        "allAvailableChannels" : true,
+        "dedicatedAccountManager" : null
+    },
+
+    {
+        "name" : "basic",
+        "description" : "Some description",
+
+        "monthlyPrice" : 99,
+        "adSpentLimit" : 30000,
+        "workspaceLimit" : 5,
+        "freeDaysCount" : 14,
+        "memberLimit" : 5,
+        "campaignLimit" : -10,
+
+        "realTimeDateSync" : true,
+        "emailSupport" : true,
+        "chatSupport": false,
+        "customDashboards": false,
+        "customFeatures": false,
+        "unifiedReporting" : true,
+        "allAvailableChannels" : true,
+        "dedicatedAccountManager" : null
+    },
+
+    {
+        "name" : "business",
+        "description" : "Some description",
+
+        "monthlyPrice" : 399,
+        "adSpentLimit" : 85000,
+        "workspaceLimit" : 10,
+        "freeDaysCount" : 14,
+        "memberLimit" : 10,
+        "campaignLimit" : -10,
+
+        "realTimeDateSync" : true,
+        "emailSupport" : true,
+        "chatSupport": true,
+        "customDashboards": false,
+        "customFeatures": false,
+        "unifiedReporting" : true,
+        "allAvailableChannels" : true,
+        "dedicatedAccountManager" : null
+    },
+
+    {
+        "name" : "enterprice",
+        "description" : "Some description",
+
+        "monthlyPrice" : null,
+        "adSpentLimit" : -10,
+        "workspaceLimit" : -10,
+        "freeDaysCount" : null,
+        "memberLimit" : 10,
+        "campaignLimit" : -10,
+
+        "realTimeDateSync" : true,
+        "emailSupport" : true,
+        "chatSupport": true,
+        "customDashboards": true,
+        "customFeatures": true,
+        "unifiedReporting" : true,
+        "allAvailableChannels" : true,
+        "dedicatedAccountManager" : true
+    }
+]

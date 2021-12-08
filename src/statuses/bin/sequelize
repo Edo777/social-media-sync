@@ -1,0 +1,119 @@
+#!/usr/bin/env node
+
+const path = require("path");
+const fs = require("fs");
+const { exec, execSync } = require("child_process");
+const moduleName = path.dirname(path.join(__dirname, "..", ".env.example")).split(path.sep).pop();
+
+if (process.argv.length < 3) {
+    console.error("Argument missing.");
+    process.exit();
+}
+
+require("../shared/bootload");
+
+const sequelizeExecPath = path.join(__dirname, "..", "node_modules", ".bin", "sequelize-cli");
+const envFields = ["DB_HOSTNAME", "DB_USERNAME", "DB_PASSWORD", "DB_DATABASE"];
+
+let command = `${sequelizeExecPath} ${process.argv.slice(2).join(" ")}`;
+
+command = command.replace(/(-\-\module\s+[a-z0-9\-_]+)/i, "");
+const executeCommand = function () {
+    return new Promise(function (resolve, reject) {
+        let envCommand = "";
+        if (process.platform === "win32") {
+            envFields.forEach((key) => {
+                execSync(`set ${key}='${process.env[key]}'`);
+            });
+        } else {
+            envCommand = envFields
+                .map(function (key) {
+                    return `${key}='${process.env[key]}'`;
+                })
+                .join(" ");
+
+            command = `${envCommand} ${command}`;
+        }
+        console.log(command);
+        exec(command, { maxBuffer: 1024 * 500 }, (err, stdOut, stdError) => {
+            let error = err || stdError;
+            if (error) {
+                error = (error.toString() || "")
+                    .replace(`Error: Command failed: ${command}\n`, "")
+                    .replace(command, "APP_HIDDEN_COMMAND");
+
+                command = command
+                    .replace(path.join(__dirname, ".."), "")
+                    .replace(`${envCommand} `, "");
+
+                console.error(
+                    `\n-------------------------------------- >>> bin/sequelize\n`,
+                    `Excecuted command: ${command}\n\n`,
+                    error
+                );
+                reject();
+            } else if (stdOut) {
+                console.log(stdOut);
+                resolve();
+            }
+        });
+    });
+};
+
+(async function () {
+    const rcExamplePath = path.join(__dirname, "..", ".sequelizerc.example");
+    const rcPath = path.join(__dirname, "..", ".sequelizerc");
+
+    if (fs.existsSync(rcPath)) {
+        fs.unlinkSync(rcPath);
+    }
+
+    fs.copyFileSync(rcExamplePath, rcPath);
+
+    const rcOld = fs.readFileSync(rcPath, "utf8");
+
+    const configExamplePath = path.join(
+        __dirname,
+        "..",
+        "shared",
+        "database",
+        "configs.js"
+    );
+    const configPath = path.join(
+        __dirname,
+        "..",
+        "shared",
+        "database",
+        "modules-based",
+        `configs-${moduleName}.js`
+    );
+
+    if (!fs.existsSync(configPath)) {
+        fs.copyFileSync(configExamplePath, configPath);
+
+        let content = fs.readFileSync(configPath, "utf-8");
+        content = content.replace(
+            /"_sequelize_migrations"/g,
+            `"_sequelize_migrations_${moduleName}"`
+        );
+        fs.writeFileSync(configPath, content, "utf-8");
+    }
+
+    console.log();
+    console.log(`---------------------------------------------------------------`);
+    console.log(`-- Executing command for module "${moduleName}".`);
+    console.log();
+
+    try {
+        const rcNew = rcOld.replace(/\{\{module_name\}\}/g, moduleName);
+        fs.writeFileSync(rcPath, rcNew, "utf8");
+
+        await executeCommand();
+        fs.writeFileSync(rcPath, rcOld, "utf8");
+    } catch (e) {
+        fs.unlinkSync(rcPath);
+        process.exit();
+    }
+
+    fs.unlinkSync(rcPath);
+})();

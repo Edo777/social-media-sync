@@ -1,0 +1,9 @@
+{
+  "semi": true,
+  "tabWidth": 4,
+  "printWidth": 100,
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "proseWrap": "always",
+  "endOfLine": "lf"
+}
