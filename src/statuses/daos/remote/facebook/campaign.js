@@ -15,37 +15,39 @@ function bulkReadAds(sdk, data) {
         return { status: "failed", result: "sdk is required" };
     }
 
-    return new Promise(async (resolve, reject) => {
-        // use batch api
-        const apiBatch = await sdk.apiBatch();
+    return new Promise((resolve, reject) => {
+        (async () => {
+            // use batch api
+            const apiBatch = await sdk.apiBatch();
 
-        // Create requests for batch execution
-        for (let i = 0; i < data.length; i++) {
-            const { campaignId, adIds, adFields } = data[i];
-            const url = `/ads`; //?ids=${adIds.split(",")}&fields=${adFields.split(",")}
-            const request = new APIRequest(campaignId, "GET", url);
+            // Create requests for batch execution
+            for (let i = 0; i < data.length; i++) {
+                const { campaignId, adIds, adFields } = data[i];
+                const url = `/ads`; //?ids=${adIds.split(",")}&fields=${adFields.split(",")}
+                const request = new APIRequest(campaignId, "GET", url);
 
-            if(adIds && adIds.length) {
-                request.addParam("ids",  adIds)
+                if(adIds && adIds.length) {
+                    request.addParam("ids",  adIds)
+                }
+
+                if(adFields && Object.keys(adFields).length) {
+                    request.addFields(adFields)
+                }
+                        
+                apiBatch.addRequest(
+                    request,
+                    (response) => console.log(response.error, "--------------------"),
+                    (response) => console.log(response.body, "-----------------------")
+                );
             }
 
-            if(adFields && Object.keys(adFields).length) {
-                request.addFields(adFields)
+            try {
+                const result = await apiBatch.execute();
+                return resolve(result);
+            } catch (error) {
+                return reject(err)
             }
-                    
-            apiBatch.addRequest(
-                request,
-                (response) => console.log(response.error),
-                (response) => console.log(response.body)
-            );
-        }
-
-        try {
-            const result = await apiBatch.execute();
-            return resolve(result);
-        } catch (error) {
-            return reject(err)
-        }
+        })();
     });
 }
 
