@@ -41,13 +41,16 @@ async function execute() {
             const { facebookId, facebookAdAccountOwnerId } = campaigns[i];
 
             if(!sdksList.hasOwnProperty(facebookAdAccountOwnerId)) {
+                sdksList[facebookAdAccountOwnerId] = {
+                    sdk: null, 
+                    campaigns: []
+                };
+            }
+
+            if(!sdksList[facebookAdAccountOwnerId].sdk) {
                 const {sdk: sdkOfCurrentUser} = await getSdkParams(facebookAdAccountOwnerId);
 
                 sdksList[facebookAdAccountOwnerId].sdk = sdkOfCurrentUser;
-            }
-
-            if(!sdksList[facebookAdAccountOwnerId].campaigns) {
-                sdksList[facebookAdAccountOwnerId].campaigns = [];
             }
 
             sdksList[facebookAdAccountOwnerId].campaigns.push(facebookId);
