@@ -61,8 +61,8 @@ async function execute() {
 
         // Set promises
         const requestPromises = [];
-        Object.keys(sdksList).forEach((d) => {
-            const {sdk, campaignIds} = d;
+        Object.keys(sdksList).forEach((row) => {
+            const {sdk, campaignIds} = sdksList[row];
 
             campaignIds.forEach((campaignId) => {
                 FacebookCampaignsDao.bulkReadAds(sdk, { campaignId , adFields: ["id", "status", "effective_status"]});
