@@ -62,10 +62,10 @@ async function execute() {
         // Set promises
         const requestPromises = [];
         Object.keys(sdksList).forEach((row) => {
-            const {sdk, campaignIds} = sdksList[row];
+            const {sdk: neededSdk, campaignIds} = sdksList[row];
 
             campaignIds.forEach((campaignId) => {
-                const promise = FacebookCampaignsDao.bulkReadAds(sdk, { campaignId , adFields: ["id", "status", "effective_status"]});
+                const promise = FacebookCampaignsDao.bulkReadAds(neededSdk, { campaignId , adFields: ["id", "status", "effective_status"]});
 
                 requestPromises.push(promise);
             });
