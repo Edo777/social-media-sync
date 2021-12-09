@@ -65,7 +65,9 @@ async function execute() {
             const {sdk, campaignIds} = sdksList[row];
 
             campaignIds.forEach((campaignId) => {
-                FacebookCampaignsDao.bulkReadAds(sdk, { campaignId , adFields: ["id", "status", "effective_status"]});
+                const promise = FacebookCampaignsDao.bulkReadAds(sdk, { campaignId , adFields: ["id", "status", "effective_status"]});
+
+                requestPromises.push(promise);
             });
         });
 
