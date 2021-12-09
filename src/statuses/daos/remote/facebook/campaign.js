@@ -23,7 +23,7 @@ async function bulkReadAds(sdk, data) {
             for (let i = 0; i < data.length; i++) {
                 const { campaignId, adIds, adFields } = data[i];
                 const url = `${campaignId}/ads`; //?ids=${adIds.split(",")}&fields=${adFields.split(",")}
-                const request = new APIRequest(campaignId, "GET", url);
+                const request = new APIRequest("", "GET", url);
 
                 if(adIds && adIds.length) {
                     request.addParam("ids",  adIds)
