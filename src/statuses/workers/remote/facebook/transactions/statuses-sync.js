@@ -43,7 +43,7 @@ async function execute() {
             if(!sdksList.hasOwnProperty(facebookAdAccountOwnerId)) {
                 sdksList[facebookAdAccountOwnerId] = {
                     sdk: null, 
-                    campaigns: []
+                    campaignIds: []
                 };
             }
 
@@ -53,7 +53,7 @@ async function execute() {
                 sdksList[facebookAdAccountOwnerId].sdk = sdkOfCurrentUser;
             }
 
-            sdksList[facebookAdAccountOwnerId].campaigns.push(facebookId);
+            sdksList[facebookAdAccountOwnerId].campaignIds.push(facebookId);
 
         }
 
@@ -62,9 +62,9 @@ async function execute() {
         // Set promises
         const requestPromises = [];
         Object.keys(sdksList).forEach((d) => {
-            const {sdk, campaigns} = d;
+            const {sdk, campaignIds} = d;
 
-            campaigns.forEach((campaignId) => {
+            campaignIds.forEach((campaignId) => {
                 FacebookCampaignsDao.bulkReadAds(sdk, { campaignId , adFields: ["id", "status", "effective_status"]});
             });
         });
