@@ -22,7 +22,7 @@ async function bulkReadAds(sdk, data) {
             // Create requests for batch execution
             for (let i = 0; i < data.length; i++) {
                 const { campaignId, adIds, adFields } = data[i];
-                const url = `${campaignId}/ads`; //?ids=${adIds.split(",")}&fields=${adFields.split(",")}
+                const url = `/${campaignId}/ads`; //?ids=${adIds.split(",")}&fields=${adFields.split(",")}
                 const request = new APIRequest("", "GET", url);
 
                 if(adIds && adIds.length) {
