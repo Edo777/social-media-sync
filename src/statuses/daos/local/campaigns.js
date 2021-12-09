@@ -1,4 +1,8 @@
 "use strict";
+
+const { SocialAds, SocialCampaigns, SocialAdAccounts, Sequelize } = require("../../shared/database/models");
+const {ne} = Sequelize.Op;
+
 /**
  * Get by spec condition
  * @param {SequelizeModel} model
@@ -45,33 +49,18 @@ async function _getMany(model, condition, options) {
     return await model.findAll(findOptions);
 }
 
-async function updateAdsDependingStatus({adId, adsetId, cre}) {
-
-}
-
-// {
-//     "object": "ad_account",
-//     "entry": [
-//       {
-//         "id": "0",
-//         "time": 1638864942,
-//         "changes": [
-//           {
-//             "field": "in_process_ad_objects",
-//             "value": {
-//               "id": "111111111111",
-//               "level": "CREATIVE",
-//               "status_name": "Paused"
-//             }
-//           }
-//         ]
-//       }
-//     ]
-//   }
-async function processData(data) {
-    console.log("Dao");
+/**
+ * Get campaigns created in facebook and ready to get statuses
+ * @returns {[object]}
+ */
+async function getFacebookCampaignsForStatusSync() {
+    return await _getMany(SocialCampaigns, {
+        facebookIsActive: true,
+        facebookUserId : {[ne] : null}, 
+        facebookId: {[ne] : null}
+    }, { attributes: ["id", "facebookId" , "facebookAdAccountId", "facebookAdAccountOwnerId", "facebookUserId"] });
 }
 
 module.exports = {
-    processData
+    getFacebookCampaignsForStatusSync,
 };

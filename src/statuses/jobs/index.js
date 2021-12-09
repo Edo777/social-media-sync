@@ -1,3 +1,3 @@
 module.exports = [
-    require("./_job_1"),
+    require("./statuses-sync"),
 ];

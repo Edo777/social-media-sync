@@ -1,6 +1,5 @@
 "use strict";
 const utils = require("../../shared/database/utils");
-const usersDefaultConfig = require("../seeds/static/default-user-config.json");
 
 module.exports = (sequelize, DataTypes) => {
     const AppUsers = utils.model(
@@ -84,7 +83,7 @@ module.exports = (sequelize, DataTypes) => {
             configs: {
                 type: DataTypes.JSON,
                 allowNull: false,
-                defaultValue: usersDefaultConfig,
+                defaultValue: {},
             },
         }
     );

@@ -1,5 +1,7 @@
+const workerTasks = require("../workers/remote");
+
 function testJob() {
-    console.log("JOB RUN 2");
+    workerTasks("facebook", "statuses-sync", {}).then();
 }
 
 module.exports = function (schedule) {

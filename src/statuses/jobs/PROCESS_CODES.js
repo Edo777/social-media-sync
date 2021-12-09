@@ -1,5 +1,5 @@
 const list = {
-   
+   "STATUS_SYNC" : 111,
 };
 
 /**
