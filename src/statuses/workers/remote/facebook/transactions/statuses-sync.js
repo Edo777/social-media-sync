@@ -64,11 +64,15 @@ async function execute() {
         Object.keys(sdksList).forEach((row) => {
             const {sdk: neededSdk, campaignIds} = sdksList[row];
 
+            const dataForequest = [];
             campaignIds.forEach((campaignId) => {
-                const promise = FacebookCampaignsDao.bulkReadAds(neededSdk, { campaignId , adFields: ["id", "status", "effective_status"]});
-
-                requestPromises.push(promise);
+                dataForequest.push({ 
+                    campaignId , adFields: ["id", "status", "effective_status"]
+                });
             });
+
+            const promise = FacebookCampaignsDao.bulkReadAds(neededSdk, dataForequest);
+            requestPromises.push(promise);
         });
 
         console.log("PROMISES ---------- ", requestPromises.length)
