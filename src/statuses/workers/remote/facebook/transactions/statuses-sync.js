@@ -13,7 +13,7 @@ async function getSdkParams(userId, facebookUserId = null) {
     const sdk = await getSdkByPlatform("facebook", userId);
 
     if (!facebookUserId) {
-        facebookUserId = this.sdk["authData"].facebookUserId;
+        facebookUserId = sdk["authData"].facebookUserId;
     }
 
     return { sdk, remoteUserId: facebookUserId };
@@ -41,7 +41,7 @@ async function execute() {
             const { facebookId, facebookAdAccountOwnerId } = campaigns[i];
 
             if(!sdksList.hasOwnProperty(facebookAdAccountOwnerId)) {
-                const sdkOfCurrentUser = await getSdkParams(facebookAdAccountOwnerId);
+                const {sdk: sdkOfCurrentUser} = await getSdkParams(facebookAdAccountOwnerId);
 
                 sdksList[facebookAdAccountOwnerId].sdk = sdkOfCurrentUser;
             }
