@@ -19,6 +19,10 @@ async function getSdkParams(userId, facebookUserId = null) {
     return { sdk, remoteUserId: facebookUserId };
 }
 
+async function formatStatuses(data) {
+
+}
+
 /**
  * Set active the unactive ads and campaigns of logged user
  * @param {number} userId
@@ -94,7 +98,11 @@ async function execute() {
          */
         const finalResult = await Promise.all(requestPromises);
 
-        console.log(finalResult);
+        const successResponses = finalResult.map((res) => res.responses);
+        const failedResponses = finalResult.map((res) => res.errors);
+
+        console.log(successResponses, "++++++++++++++++++++++++++++++++++++++++++++++++");
+        console.log(failedResponses, "++++++++++++++++++++++++++++++++++++++++++++++++");
 
         return { status: "success", result: "success" };
     } catch (error) {
