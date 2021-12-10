@@ -14,13 +14,21 @@ function bulkReadAds(sdk, data) {
     if(!sdk) {
         return { status: "failed", result: "sdk is required" };
     }
+
+    
     console.log("----------------------------------------------");
     return new Promise(async (resolve, reject) => {
+        let countOfRequests = 0;
+        let countOfResponses = 0;
+
+        const responses = [];
+
         // use batch api
         const apiBatch = await sdk.apiBatch();
 
         // Create requests for batch execution
         for (let i = 0; i < data.length; i++) {
+            countOfRequests++;
             const { campaignId, adIds, adFields } = data[i];
             const url = `/ads`; //?ids=${adIds.split(",")}&fields=${adFields.split(",")}
             const request = new APIRequest(campaignId, "GET", url);
@@ -36,11 +44,16 @@ function bulkReadAds(sdk, data) {
             apiBatch.addRequest(
                 request,
                 (response) => {
-                    if(response.error) {
-                        return reject(response.body)
+                    countOfResponses++;
+                    if(response.body) {
+                        responses.push(response.body);
                     }
 
-                    return resolve(response.body)
+                    console.log(countOfRequests, "----------------------------------------------", countOfResponses);
+
+                    if(countOfResponses.length >= countOfRequests) {
+                        return resolve(responses);
+                    }
                 },
             );
         }
