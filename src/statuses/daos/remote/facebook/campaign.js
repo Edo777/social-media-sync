@@ -31,7 +31,7 @@ function bulkReadAds(sdk, data) {
         for (let i = 0; i < data.length; i++) {
             countOfRequests++;
             const { campaignId, adIds, adFields } = data[i];
-            const url = `/ads`; //?ids=${adIds.split(",")}&fields=${adFields.split(",")}
+            let url = `/ads`; //?ids=${adIds.split(",")}&fields=${adFields.split(",")}
             const request = new APIRequest(campaignId, "GET", url);
 
             if(adIds && adIds.length) {
