@@ -98,11 +98,7 @@ async function execute() {
          */
         const finalResult = await Promise.all(requestPromises);
 
-        const successResponses = finalResult.map((res) => res.responses);
-        const failedResponses = finalResult.map((res) => res.errors);
-
-        console.log(successResponses, "++++++++++++++++++++++++++++++++++++++++++++++++");
-        console.log(failedResponses, "++++++++++++++++++++++++++++++++++++++++++++++++");
+        console.log(finalResult, "++++++++++++++++++++++++++++++++++++++++++++++++");
 
         return { status: "success", result: "success" };
     } catch (error) {
