@@ -138,6 +138,8 @@ async function execute() {
             return `${ad.status}-${ad.effectiveStatus}`;
         });
 
+        console.log(formattedAds);
+
         const updatePromises = [];
         for(uniqueKey in groupedByStatuses){
             const updateAdIds = groupedByStatuses[uniqueKey].map(i => i.id);
