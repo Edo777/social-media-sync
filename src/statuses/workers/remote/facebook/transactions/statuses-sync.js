@@ -50,7 +50,7 @@ function formatStatuses(ads) {
  * @param {any} remoteUserId
  * @returns {{status :string, result: any}}
  */
-async function execute(CRON_CODE) {
+async function execute() {
     try {
         const campaigns = await LocalCampaignsDao.getFacebookCampaignsForStatusSync();
 
