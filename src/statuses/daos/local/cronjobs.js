@@ -19,13 +19,13 @@ async function syncStatuses(platform, CRON_CODE) {
     }
 
     // Start cronjob
-    await JobsDao.updateJob(CRON_CODE, false);
+    await updateJob(CRON_CODE, false);
     
     // start worker
     await workerTasks(platform, "statuses-sync", {});
     
     // end cronjob
-    await JobsDao.updateJob(CRON_CODE, true);
+    await updateJob(CRON_CODE, true);
 }
 
 /**
