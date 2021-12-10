@@ -18,8 +18,6 @@ function bulkReadAds(sdk, data) {
         return { status: "failed", result: "sdk is required" };
     }
 
-    
-    console.log("----------------------------------------------");
     return new Promise(async (resolve, reject) => {
         let countOfRequests = 0;
         let countOfResponses = 0;
@@ -45,8 +43,6 @@ function bulkReadAds(sdk, data) {
                 request.addFields(adFields)
             }
 
-            
-            
             apiBatch.addRequest(
                 request,
                 (response) => {

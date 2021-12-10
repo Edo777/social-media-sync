@@ -50,7 +50,7 @@ function formatStatuses(ads) {
  * @param {any} remoteUserId
  * @returns {{status :string, result: any}}
  */
-async function execute() {
+async function execute(CRON_CODE) {
     try {
         const campaigns = await LocalCampaignsDao.getFacebookCampaignsForStatusSync();
 
@@ -134,8 +134,6 @@ async function execute() {
         }
 
         const formattedAds = formatStatuses(ads);
-        console.log(formattedAds, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-
         const groupedByStatuses = _.groupBy(formattedAds, (ad) => {
             return `${ad.status}-${ad.effectiveStatus}`;
         });
@@ -150,12 +148,12 @@ async function execute() {
                 // updatePromises.push(LocalAdsDao._update({status, effectiveStatus}, {remoteAdId: updateAdIds}));
             }
         }
-        console.log(updatePromises, "--------------------------------------------------------");
 
         if(!updatePromises.length) {
             return
         }
-        // console.log(updatePromises, "--------------------------------------------------------");
+
+        console.log(updatePromises);
 
         return { status: "success", result: "success" };
     } catch (error) {

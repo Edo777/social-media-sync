@@ -1,5 +1,6 @@
 const { StatusSync } = require("./transactions");
 const { workerData, parentPort } = require("worker_threads");
+const { CRON_CODE } = workerData;
 
 /** START PROCESSING */
 (async () => {

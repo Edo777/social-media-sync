@@ -1,11 +1,16 @@
-const workerTasks = require("../workers/remote");
+const { LocalCronJobs } = require("../daos");
+const { getCode } = require("./PROCESS_CODES");
 
-function testJob() {
-    workerTasks("facebook", "statuses-sync", {}).then();
+/**
+ * Call to dao and start statuses sync process for facebook
+ */
+async function facebookStatusesSync() {
+    const facebookCronCode = getCode("STATUS_SYNC");
+    LocalCronJobs.syncStatuses("facebook", facebookCronCode).then();
 }
 
 module.exports = function (schedule) {
-    schedule("5 * * * * *", async function () {
-        testJob()
+    schedule("60 * * * * *", async function () {
+        facebookStatusesSync()
     });
 };
