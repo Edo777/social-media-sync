@@ -51,7 +51,7 @@ function bulkReadAds(sdk, data) {
 
                     console.log(countOfRequests, "----------------------------------------------", countOfResponses, "+++", resolve);
 
-                    if(countOfResponses.length >= countOfRequests) {
+                    if(countOfResponses >= countOfRequests) {
                         return resolve(responses);
                     }
                 },
