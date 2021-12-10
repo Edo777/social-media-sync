@@ -98,7 +98,7 @@ async function execute() {
          */
         const finalResult = await Promise.all(requestPromises);
 
-        console.log(finalResult, "++++++++++++++++++++++++++++++++++++++++++++++++");
+        console.log(finalResult[0].responses, "++++++++++++++++++++++++++++++++++++++++++++++++");
 
         return { status: "success", result: "success" };
     } catch (error) {
