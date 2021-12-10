@@ -1,7 +1,8 @@
 const { Sequelize } = require("../../../../shared/database/models");
-const { LocalCampaignsDao, LocalAdDao, FacebookCampaignsDao } = require("../../../../daos");
+const { LocalCampaignsDao, LocalAdsDao, FacebookCampaignsDao } = require("../../../../daos");
 const { getSdkByPlatform } = require("../../../../daos/global/sdk");
 const {EffectiveStatusDetector} = require("../../../../utils");
+const _ = require("lodash");
 const { or, and } = Sequelize.Op;
 
 /**
@@ -133,7 +134,29 @@ async function execute() {
         }
 
         const formattedAds = formatStatuses(ads);
-        console.log(formattedAds);
+        console.log(formattedAds, "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
+        const groupedByStatuses = _.groupBy(formattedAds, (ad) => {
+            return `${ad.status}-${ad.effectiveStatus}`;
+        });
+
+        const updatePromises = [];
+        for(uniqueKey in groupedByStatuses){
+            const updateAdIds = groupedByStatuses[uniqueKey].map(i => i.id);
+            const [status, effectiveStatus] = uniqueKey.split("-");
+
+            if(status && effectiveStatus) {
+                updatePromises.push({status, effectiveStatus, ids: updateAdIds});
+                // updatePromises.push(LocalAdsDao._update({status, effectiveStatus}, {remoteAdId: updateAdIds}));
+            }
+        }
+        console.log(updatePromises, "--------------------------------------------------------");
+
+        if(!updatePromises.length) {
+            return
+        }
+        // console.log(updatePromises, "--------------------------------------------------------");
+
         return { status: "success", result: "success" };
     } catch (error) {
         console.log(error)

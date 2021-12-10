@@ -50,6 +50,19 @@ async function _getMany(model, condition, options) {
 }
 
 /**
+ * Update Ads
+ * @param {any} model 
+ * @param {object} data 
+ * @param {object} condition 
+ * @returns 
+ */
+async function _update(data, condition) {
+    const updateOptions = { where: condition };
+
+    return await SocialAds.update(data, updateOptions);
+}
+
+/**
  * Get campaigns-ads-adgroups created in google and ready to get statuses
  * @returns {[object]}
  */
@@ -77,5 +90,6 @@ async function _getMany(model, condition, options) {
 }
 
 module.exports = {
+    _update,
     getGoogleAdsForStatusSync
 };
