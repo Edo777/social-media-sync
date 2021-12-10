@@ -19,8 +19,27 @@ async function getSdkParams(userId, facebookUserId = null) {
     return { sdk, remoteUserId: facebookUserId };
 }
 
-async function formatStatuses(data) {
+/**
+ * Detect statuses
+ * @param {[{id: number, status: string, effective_status: string}]} ads 
+ * @returns {[{id: number, status: string, effectiveStatus: string}]}
+ */
+function formatStatuses(ads) {
+    const formattedAds = [];
+    for (let i = 0; i < ads.length; i++) {
+        const adFromRemote = JSON.parse(JSON.stringify(ads[i]));
 
+        if (adFromRemote && adFromRemote["effective_status"] && adFromRemote["status"]) {
+            const { status, effectiveStatus } = EffectiveStatusDetector.detectFacebook(
+                adFromRemote["effective_status"],
+                adFromRemote["status"]
+            );
+
+            formattedAds.push({ id: adFromRemote.id, status, effectiveStatus });
+        }
+    }
+
+    return formattedAds;
 }
 
 /**
@@ -98,8 +117,22 @@ async function execute() {
          */
         const finalResult = await Promise.all(requestPromises);
 
-        console.log(finalResult[0].responses, "++++++++++++++++++++++++++++++++++++++++++++++++");
+        /**
+         * -------------------
+         * | MODIFY RESPONSE |
+         * -------------------
+         */
+        const ads = [];
+        for(response of finalResult) {
+            ads.push(...response["responses"]);
+        }
 
+        if(!ads.length) {
+            return { status: "success", result: "success" };
+        }
+
+        const formattedAds = formatStatuses(ads);
+        console.log(formattedAds);
         return { status: "success", result: "success" };
     } catch (error) {
         console.log(error)
