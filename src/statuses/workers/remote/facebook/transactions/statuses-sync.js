@@ -1,6 +1,7 @@
 const { Sequelize } = require("../../../../shared/database/models");
 const { LocalCampaignsDao, LocalAdDao, FacebookCampaignsDao } = require("../../../../daos");
 const { getSdkByPlatform } = require("../../../../daos/global/sdk");
+const {EffectiveStatusDetector} = require("../../../../utils");
 const { or, and } = Sequelize.Op;
 
 /**
