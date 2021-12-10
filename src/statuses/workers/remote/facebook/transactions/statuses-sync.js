@@ -138,7 +138,7 @@ async function execute() {
             return `${ad.status}-${ad.effectiveStatus}`;
         });
 
-        console.log(formattedAds);
+        console.log(finalResult);
 
         const updatePromises = [];
         for(uniqueKey in groupedByStatuses){
