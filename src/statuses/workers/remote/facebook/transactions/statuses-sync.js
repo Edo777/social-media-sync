@@ -159,8 +159,6 @@ async function execute() {
          * ---------------------------
          */
         const promiseChunks = _.chunk(updatePromises, 5);
-
-        return console.log(promiseChunks);
         for(const promiseChunk of promiseChunks) {
             await Promise.all(promiseChunk);
         }
