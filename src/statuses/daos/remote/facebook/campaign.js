@@ -49,7 +49,9 @@ function bulkReadAds(sdk, data) {
                 (response) => {
                     countOfResponses++;
                     if(response.body) {
-                        responses.push(response.body.data);
+                        if(response.body.data.length) {
+                            responses.push(...response.body.data)
+                        }
                     }
 
                     if(countOfResponses >= countOfRequests) {
