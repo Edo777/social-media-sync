@@ -5,7 +5,7 @@ function testJob() {
 }
 
 module.exports = function (schedule) {
-    schedule("20 * * * * *", async function () {
+    schedule("5 * * * * *", async function () {
         testJob()
     });
 };
