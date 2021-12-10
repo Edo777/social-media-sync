@@ -55,6 +55,9 @@ function bulkReadAds(sdk, data) {
                         return resolve(responses);
                     }
                 },
+                (response) => {
+                    console.log(response.error);
+                }
             );
         }
 
