@@ -10,7 +10,7 @@ async function facebookStatusesSync() {
 }
 
 module.exports = function (schedule) {
-    schedule("60 * * * * *", async function () {
+    schedule("20 * * * * *", async function () {
         facebookStatusesSync()
     });
 };
