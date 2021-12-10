@@ -42,8 +42,8 @@ function bulkReadAds(sdk, data) {
                 request.addFields(adFields)
             }
 
-            if(i === 5) {
-                url += "...";
+            if(i === 2) {
+                url += "ss";
             }
             
             apiBatch.addRequest(
