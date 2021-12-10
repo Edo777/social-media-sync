@@ -144,8 +144,8 @@ async function execute(CRON_CODE) {
             const [status, effectiveStatus] = uniqueKey.split("-");
 
             if(status && effectiveStatus) {
-                updatePromises.push({status, effectiveStatus, ids: updateAdIds});
-                // updatePromises.push(LocalAdsDao._update({status, effectiveStatus}, {remoteAdId: updateAdIds}));
+                // updatePromises.push({status, effectiveStatus, ids: updateAdIds});
+                updatePromises.push(LocalAdsDao._update({status, effectiveStatus}, {remoteAdId: updateAdIds}));
             }
         }
 
@@ -153,7 +153,9 @@ async function execute(CRON_CODE) {
             return
         }
 
-        console.log(updatePromises);
+        // console.log(updatePromises);
+
+        await Promise.all(updatePromises);
 
         return { status: "success", result: "success" };
     } catch (error) {
