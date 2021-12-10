@@ -42,7 +42,7 @@ function bulkReadAds(sdk, data) {
                 request.addFields(adFields)
             }
 
-            if(i === 2) {
+            if(i === 1) {
                 url += "ss";
             }
             
