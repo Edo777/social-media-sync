@@ -22,6 +22,7 @@ function bulkReadAds(sdk, data) {
         let countOfResponses = 0;
 
         const responses = [];
+        const errors = [];
 
         // use batch api
         const apiBatch = await sdk.apiBatch();
@@ -49,14 +50,22 @@ function bulkReadAds(sdk, data) {
                         responses.push(response.body);
                     }
 
-                    console.log(countOfRequests, "----------------------------------------------", countOfResponses, "+++", resolve);
+                    console.log(countOfRequests, "----------------------------------------------", countOfResponses);
 
                     if(countOfResponses >= countOfRequests) {
-                        return resolve(responses);
+                        return resolve({responses, errors});
                     }
                 },
                 (response) => {
-                    console.log(response.error);
+                    console.log(countOfRequests, "************************************************", countOfResponses);
+                    countOfResponses++;
+                    if(response.error) {
+                        errors.push(response.error);
+                    }
+
+                    if(countOfResponses >= countOfRequests) {
+                        return resolve({responses, errors});
+                    }
                 }
             );
         }
