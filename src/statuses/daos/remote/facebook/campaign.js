@@ -8,7 +8,10 @@ const { APIRequest } = require("../../../../sdks/facebook");
  *  adIds: [string],
  *  adFields: [string]
  * }]} data 
- * @returns 
+ * @returns {Promise<[{
+ *  responses: [[object]],
+ *  errors: [[object]]
+ * }]>}
  */
 function bulkReadAds(sdk, data) {
     if(!sdk) {
@@ -50,7 +53,14 @@ function bulkReadAds(sdk, data) {
                     countOfResponses++;
                     if(response.body) {
                         if(response.body.data.length) {
-                            responses.push(...response.body.data)
+                            for(d in response.body.data){
+                                if(Array.isArray(d)) {
+                                    responses.push(...d)
+                                }else{
+                                    responses.push(d)
+                                }
+                            }
+                            
                         }
                     }
 
