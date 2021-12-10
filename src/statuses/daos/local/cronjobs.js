@@ -1,4 +1,4 @@
-const { StatusSyncCronJobs } = require("../../shared/database/models");
+const { StatusSyncCronjobs } = require("../../shared/database/models");
 const workerTasks = require("../../workers/remote");
 
 /**
@@ -34,7 +34,7 @@ async function syncStatuses(platform, CRON_CODE) {
  * @returns
  */
 async function canStartJob(JOB_CODE) {
-    const cronRow = await StatusSyncCronJobs.findOne({
+    const cronRow = await StatusSyncCronjobs.findOne({
         where: { code: JOB_CODE },
         attributes: ["canLoad"],
     });
@@ -52,7 +52,7 @@ async function canStartJob(JOB_CODE) {
  * @param {boolean} finished
  */
 async function updateJob(JOB_CODE, finished) {
-    const [instance, isNewRecord] = await StatusSyncCronJobs.findOrCreate({
+    const [instance, isNewRecord] = await StatusSyncCronjobs.findOrCreate({
         where: { code: JOB_CODE },
     });
 
