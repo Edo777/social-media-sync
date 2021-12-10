@@ -153,9 +153,17 @@ async function execute() {
             return
         }
 
-        // console.log(updatePromises);
+        /**
+         * ---------------------------
+         * | SPLIT UPDATES TO CHUNKS |
+         * ---------------------------
+         */
+        const promiseChunks = _.chunk(updatePromises, 5);
 
-        await Promise.all(updatePromises);
+        return console.log(promiseChunks);
+        for(const promiseChunk of promiseChunks) {
+            await Promise.all(promiseChunk);
+        }
 
         return { status: "success", result: "success" };
     } catch (error) {
