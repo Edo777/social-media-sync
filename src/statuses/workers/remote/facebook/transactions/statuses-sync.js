@@ -29,13 +29,15 @@ async function execute() {
     try {
         const campaigns = await LocalCampaignsDao.getFacebookCampaignsForStatusSync();
 
-        console.log("CMPS ---------- ", campaigns.length)
-
         if(!campaigns.length) {
             return { status: "success", result: "success" };
         }
 
-        // Set sdks
+        /**
+         * ----------------------------------------------
+         * | GENERATE SDK LIST FOR EACH CAMPAIGN's USER |
+         * ----------------------------------------------
+         */
         const sdksList = {};
         for(let i = 0; i < campaigns.length; i++) {
             const { facebookId, facebookAdAccountOwnerId } = campaigns[i];
@@ -57,9 +59,15 @@ async function execute() {
 
         }
 
-        console.log("SDKS ---------- ", Object.keys(sdksList).length)
+        if(!Object.keys(sdksList).length) {
+            return { status: "success", result: "success" };
+        }
 
-        // Set promises
+        /**
+         * ---------------------------------------
+         * | GENERATE Promises for bulk requests |
+         * ---------------------------------------
+         */
         const requestPromises = [];
         Object.keys(sdksList).forEach((row) => {
             const {sdk: neededSdk, campaignIds} = sdksList[row];
@@ -75,13 +83,15 @@ async function execute() {
             requestPromises.push(promise);
         });
 
-        console.log("PROMISES ---------- ", requestPromises.length)
-
         if(!requestPromises.length) {
             return { status: "success", result: "success" };
         }
 
-        // Execute load
+        /**
+         * -------------------------
+         * | EXECUTE BULK REQUESTS |
+         * -------------------------
+         */
         const finalResult = await Promise.all(requestPromises);
 
         console.log(finalResult);

@@ -14,7 +14,7 @@ function bulkReadAds(sdk, data) {
     if(!sdk) {
         return { status: "failed", result: "sdk is required" };
     }
-
+    console.log("----------------------------------------------");
     return new Promise(async (resolve, reject) => {
         // use batch api
         const apiBatch = await sdk.apiBatch();
@@ -32,17 +32,21 @@ function bulkReadAds(sdk, data) {
             if(adFields && Object.keys(adFields).length) {
                 request.addFields(adFields)
             }
-                    
+            
             apiBatch.addRequest(
                 request,
-                (response) => console.log(response.body),
-                (response) => console.log(response.error)
+                (response) => {
+                    if(response.error) {
+                        return reject(response.body)
+                    }
+
+                    return resolve(response.body)
+                },
             );
         }
 
         try {
-            const result = await apiBatch.execute();
-            return resolve(result);
+            await apiBatch.execute();
         } catch (error) {
             return reject(err)
         }
