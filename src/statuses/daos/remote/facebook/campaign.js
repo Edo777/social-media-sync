@@ -41,21 +41,23 @@ function bulkReadAds(sdk, data) {
                 request.addFields(adFields)
             }
             
-            apiBatch.addRequest(
-                request,
-                (response) => {
-                    countOfResponses++;
-                    if(response.body) {
-                        responses.push(response.body);
-                    }
-
-                    console.log(countOfRequests, "----------------------------------------------", countOfResponses);
-
-                    if(countOfResponses.length >= countOfRequests) {
-                        return resolve(responses);
-                    }
-                },
-            );
+            ((resolve) => {
+                apiBatch.addRequest(
+                    request,
+                    (response) => {
+                        countOfResponses++;
+                        if(response.body) {
+                            responses.push(response.body);
+                        }
+    
+                        console.log(countOfRequests, "----------------------------------------------", countOfResponses);
+    
+                        if(countOfResponses.length >= countOfRequests) {
+                            return resolve(responses);
+                        }
+                    },
+                );
+            })(resolve);
         }
 
         try {
