@@ -31,7 +31,7 @@ function bulkReadAds(sdk, data) {
         for (let i = 0; i < data.length; i++) {
             countOfRequests++;
             const { campaignId, adIds, adFields } = data[i];
-            const url = `/adsss`; //?ids=${adIds.split(",")}&fields=${adFields.split(",")}
+            const url = `/ads`; //?ids=${adIds.split(",")}&fields=${adFields.split(",")}
             const request = new APIRequest(campaignId, "GET", url);
 
             if(adIds && adIds.length) {
@@ -40,6 +40,10 @@ function bulkReadAds(sdk, data) {
 
             if(adFields && Object.keys(adFields).length) {
                 request.addFields(adFields)
+            }
+
+            if(i === 5) {
+                url += "...";
             }
             
             apiBatch.addRequest(
@@ -50,14 +54,11 @@ function bulkReadAds(sdk, data) {
                         responses.push(response.body);
                     }
 
-                    console.log(countOfRequests, "----------------------------------------------", countOfResponses);
-
                     if(countOfResponses >= countOfRequests) {
                         return resolve({responses, errors});
                     }
                 },
                 (response) => {
-                    console.log(countOfRequests, "************************************************", countOfResponses);
                     countOfResponses++;
                     if(response.error) {
                         errors.push(response.error);
