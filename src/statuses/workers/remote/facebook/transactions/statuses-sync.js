@@ -77,11 +77,10 @@ async function execute() {
             if(!sdksList[facebookAdAccountOwnerId].sdk) {
                 try {
                     const {sdk: sdkOfCurrentUser} = await getSdkParams(facebookAdAccountOwnerId);
+                    sdksList[facebookAdAccountOwnerId].sdk = sdkOfCurrentUser;
                 } catch (error) {
                     continue;
                 }
-
-                sdksList[facebookAdAccountOwnerId].sdk = sdkOfCurrentUser;
             }
 
             sdksList[facebookAdAccountOwnerId].campaignIds.push(facebookId);
