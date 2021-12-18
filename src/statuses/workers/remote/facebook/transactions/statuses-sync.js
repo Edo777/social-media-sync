@@ -129,7 +129,9 @@ async function execute() {
          */
         const ads = [];
         for(response of finalResult) {
-            ads.push(...response["responses"]);
+            if(response && response.responses){
+                ads.push(...response["responses"]);
+            }
         }
 
         if(!ads.length) {

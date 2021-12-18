@@ -15,7 +15,7 @@ const { APIRequest } = require("../../../../sdks/facebook");
  */
 function bulkReadAds(sdk, data) {
     if(!sdk) {
-        return { status: "failed", result: "sdk is required" };
+        return false;
     }
 
     return new Promise(async (resolve, reject) => {
