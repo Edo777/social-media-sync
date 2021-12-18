@@ -80,7 +80,7 @@ function bulkReadAds(sdk, data) {
         try {
             await apiBatch.execute();
         } catch (error) {
-            return reject(err)
+            return reject(error)
         }
     });
 }

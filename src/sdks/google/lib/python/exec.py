@@ -46,7 +46,7 @@ def __exec_command(command_lib, arguments, is_async_task=False):
     # execute
     executor = importlib.import_module(command_lib).ExecuteCommand()
     executor.set_arguments(arguments)
-    executor.set_api_version("v8")
+    executor.set_api_version("v9")
     executor.set_env_variables(
         client_id = env_client_id,
         client_secret = env_client_secret,

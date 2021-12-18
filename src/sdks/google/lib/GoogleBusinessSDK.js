@@ -22,7 +22,7 @@ const makePyExecWithApi = function (api, pythonShellLogging) {
                 _loginCustomerId,
                 _clientCustomerId,
             } = api;
-            console.log(args);
+
             return new Promise(function (resolve, reject) {
                 try {
                     const _request = toValidArgument(JSON.stringify(args || {}));

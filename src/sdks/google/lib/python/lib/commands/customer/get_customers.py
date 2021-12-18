@@ -87,8 +87,8 @@ class ExecuteCommand(BaseCommand):
         for customer_id in customer_ids:
             try:
                 manager_customer = self.__get_customer_by_id(service, customer_id)
-                # if manager_customer is None:
-                #     continue
+                if manager_customer is None:
+                    continue
 
                 # if not manager_customer.manager:
                 #     continue

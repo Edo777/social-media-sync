@@ -55,21 +55,6 @@ class ExecuteCommand(BaseCommand):
             ad_group_ad.ad.image_ad.name,
             ad_group_ad.ad.image_ad.preview_image_url,
         """,
-
-        # fields from VideoAdInfo
-        """
-            ad_group_ad.ad.video_ad.media_file,
-            ad_group_ad.ad.video_ad.in_stream.action_button_label,
-            ad_group_ad.ad.video_ad.in_stream.action_headline,
-            ad_group_ad.ad.video_ad.in_stream.companion_banner,
-            ad_group_ad.ad.video_ad.bumper.companion_banner,
-            ad_group_ad.ad.video_ad.out_stream.headline,
-            ad_group_ad.ad.video_ad.out_stream.description,
-            ad_group_ad.ad.video_ad.non_skippable.companion_banner,
-            ad_group_ad.ad.video_ad.discovery.headline,
-            ad_group_ad.ad.video_ad.discovery.description1,
-            ad_group_ad.ad.video_ad.discovery.description2,
-        """,
     ]
 
     __query = """

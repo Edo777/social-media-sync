@@ -71,6 +71,7 @@ GoogleAuthSDK.prototype.generateAuthUrl = async function (params) {
         include_granted_scopes: true,
         response_type: "code",
         scope: params.scopes,
+        // login_hint: "some email for auth"
         /* eslint-enable camelcase */
     });
 };

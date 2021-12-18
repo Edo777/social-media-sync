@@ -4,6 +4,7 @@ import json
 from google.protobuf.json_format import MessageToJson
 from google.ads.googleads.client import GoogleAdsClient
 from ..decorators.abstract_class import abstract_class
+from google.ads.googleads import config, oauth2, util
 # from google.ads.googleads.v8.services.types.google_ads_service import GoogleAdsRow
 # from google.ads.googleads.v8.resources.types.campaign import Campaign
 
@@ -72,6 +73,7 @@ class BaseExecution(ABC):
         }
 
         configs = {
+            "credentials": oauth2.get_credentials(oauth_data),
             "use_proto_plus": True,
             "logging_config": {
                 "disable_existing_loggers": True,
@@ -160,7 +162,7 @@ class BaseExecution(ABC):
         enum_instance = None
 
         # Enum instance get logic in v6
-        if self.__api_version != "v8":
+        if self.__api_version != "v9":
             enum_instance = self.__google_ads_client.get_type(
                 name = enum_name,
                 version = self.__api_version
@@ -251,7 +253,7 @@ class BaseExecution(ABC):
 
     # loop on response result with callbacks
     def loop_result(self, responses, callback):
-        if self.__api_version != "v8":
+        if self.__api_version != "v9":
             list_result = []
 
             try:
