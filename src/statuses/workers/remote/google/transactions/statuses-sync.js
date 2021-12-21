@@ -68,8 +68,8 @@ async function execute() {
             return { status: "success", result: "success" };
         }
 
-        const groupedAds = _.groupBy(adsAdgroupsCampaigns, ({ loginCustomerId, clientCustomerId }) => {
-            return `${loginCustomerId}-${clientCustomerId}`;
+        const groupedAds = _.groupBy(adsAdgroupsCampaigns, ({ loginCustomerId, clientCustomerId, adAccountOwnerId }) => {
+            return `${loginCustomerId}-${clientCustomerId}-${adAccountOwnerId}`;
         })
 
         /**
@@ -82,6 +82,7 @@ async function execute() {
         
         for(let i = 0; i < concattedIds.length; i++) {
             const loginClientCustomerId = concattedIds[i];
+            const [loginCustomerId, clientCustomerId, userId] = loginClientCustomerId.split("-");
             
             // sdk for job
             const sdk = await getSdkParams({clientCustomerId, loginCustomerId, userId});

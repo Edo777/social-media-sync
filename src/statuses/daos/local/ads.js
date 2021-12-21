@@ -77,6 +77,7 @@ async function _update(data, condition) {
     const options = {
         attributes: [
             "id",  
+            "adAccountOwnerId",
             "remoteAdId", 
             "googleCampaignId" , 
             "googleAdgroupId", 
