@@ -92,13 +92,14 @@ GoogleSDK.prototype.setRefreshToken = function (refreshToken) {
 /**
  * Generate google login url.
  * @param {string} redirectUrl
- * @param {string[]} scopes
+ * @param {{permissions: [string], loginHint: string}} param2
  */
-GoogleSDK.prototype.generateAuthUrl = function (redirectUrl, scopes) {
+GoogleSDK.prototype.generateAuthUrl = function (redirectUrl, { permissions, loginHint }) {
     return this._auth.generateAuthUrl({
         /* eslint-disable camelcase */
         redirect_uri: redirectUrl,
-        scopes: scopes,
+        scopes: permissions,
+        login_hint: loginHint,
         /* eslint-enable camelcase */
     });
 };

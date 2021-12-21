@@ -54,6 +54,27 @@ const {
     return {status : "success", result: accessTokenRow}
 };
 
+/**
+ * Get access tokens row by remote user id
+ * @param {number | string} userId
+ * @return {Promise<{status : "success" | "failed", result : any}>}
+ */
+ async function getAccessTokensRowByRemoteUserId(userId, platform, attributes=[]) {
+    const condition = { [`${platform}UserId`]: userId, [`${platform}IsLogged`]: true};
+    const options = { attributes: ["id", `${platform}AccessToken`] };
+
+    if(attributes && attributes.length) {
+        options.attributes = Array.from(new Set([...options.attributes, ...attributes]));
+    }
+    
+    let accessTokenRow = await _get(SocialAccessTokens, condition, options);
+
+    if(!accessTokenRow) {
+        return {status: "failed", result : "sdk doesnt exists"};
+    }
+
+    return {status : "success", result: accessTokenRow}
+};
 
 /**
  * Get sdk instance.
@@ -133,6 +154,85 @@ async function getSdkInstance(provider, userId = null) {
     throw new Error(`Unknown SDK provider: ${provider}`);
 };
 
+/**
+ * Get sdk instance.
+ * @param {"facebook"|"instagram"|"twitter"|"tiktok"|"linkedin"|"google"} provider
+ * @param {number|null} userId
+ * @returns {FacebookSDK|LinkedinSDK|TwitterSDK|TiktokSDK}
+ * @throws
+ */
+ async function getSdkInstanceByRemoteUser(provider, remoteUserId, attributes = null) {
+    let authData = {};
+    if (null != remoteUserId) {
+        const tokensData  = await getAccessTokensRowByRemoteUserId(remoteUserId, provider, attributes);
+
+        if(tokensData.status === "success") {
+            authData = tokensData.result;
+        }
+    }
+
+    let sdkInstance = null;
+    switch (provider) {
+        case "facebook":
+        case "instagram":
+            sdkInstance = new FacebookSDK(
+                SOCIAL_MEDIA_FACEBOOK_APP_ID,
+                SOCIAL_MEDIA_FACEBOOK_APP_SECRET,
+                authData.facebookAccessToken || ""
+            );
+            break;
+
+        case "linkedin":
+            sdkInstance = new LinkedinSDK(
+                SOCIAL_MEDIA_LINKEDIN_CLIENT_ID,
+                SOCIAL_MEDIA_LINKEDIN_CLIENT_SECRET,
+                authData.linkedinAccessToken || ""
+            );
+            break;
+
+        case "tiktok":
+            sdkInstance = new TiktokSDK(
+                SOCIAL_MEDIA_TIKTOK_APP_ID,
+                SOCIAL_MEDIA_TIKTOK_SECRET,
+                authData.tiktokAccessToken || ""
+            );
+            break;
+
+        case "twitter":
+            sdkInstance = new TwitterSDK(
+                SOCIAL_MEDIA_TWITTER_CONSUMER_KEY,
+                SOCIAL_MEDIA_TWITTER_CONSUMER_SECRET,
+                authData.twitterAccessToken || "",
+                authData.twitterAccessSecret || ""
+            );
+            break;
+
+        case "youtube":
+        case "google":
+        case "google-appinstall":
+        case "google-search":
+        case "google-image":
+        case "google-display":
+            sdkInstance = new GoogleSDK({
+                clientId: SOCIAL_MEDIA_GOOGLE_CLIENT_ID,
+                clientSecret: SOCIAL_MEDIA_GOOGLE_CLIENT_SECRET,
+                developerToken: SOCIAL_MEDIA_GOOGLE_DEVELOPER_TOKEN,
+                accessToken: authData.googleAccessToken || "",
+                refreshToken: authData.googleRefreshToken || "",
+                pythonShellLogging: process.isProd ? !process.isProd() : true,
+            });
+            break;
+    }
+
+    if (null != sdkInstance) {
+        sdkInstance.authData = { ...authData.dataValues };
+        return sdkInstance;
+    }
+
+    throw new Error(`Unknown SDK provider: ${provider}`);
+};
+
 module.exports = {
     getSdkByPlatform: getSdkInstance,
+    getSdkByRemoteUser: getSdkInstanceByRemoteUser
 };

@@ -8,37 +8,55 @@ class ExecuteCommand(BaseCommand):
 
     __query = """
         SELECT
-            campaign.id,
-            campaign.name,
-            campaign.serving_status,
-            campaign.status,
-            campaign.ad_serving_optimization_status,
-            campaign.advertising_channel_type,
-            campaign.advertising_channel_sub_type,
-            campaign.bidding_strategy_type,
-            campaign.url_custom_parameters,
-            campaign.app_campaign_setting.bidding_strategy_goal_type,
-            campaign.app_campaign_setting.app_store,
-            campaign.app_campaign_setting.app_id,
-            campaign.network_settings.target_google_search,
-            campaign.network_settings.target_search_network,
-            campaign.network_settings.target_content_network,
-            campaign.network_settings.target_partner_search_network,
-            campaign.geo_target_type_setting.positive_geo_target_type,
-            campaign.geo_target_type_setting.negative_geo_target_type,
-            campaign.local_campaign_setting.location_source_type,
-            campaign.experiment_type,
-            metrics.impressions,
-            metrics.clicks,
-            metrics.ctr,
-            metrics.average_cpc,
-            metrics.average_cpm,
-            metrics.cost_micros
+            %s
         FROM
             campaign
+            %s
         ORDER BY
             campaign.id
     """
+
+    def generate_query(self, attributes, ids):
+        campaign_attributes = None
+        metric_attributes = None
+
+        # set campaign attributes
+        if "campaign" in attributes:
+            campaign_attributes = attributes["campaign"]
+        
+        # set metrics
+        if "metrics" in attributes:
+            metric_attributes = attributes["metrics"]
+
+        if campaign_attributes is None:
+            campaign_attributes=["id", "name"]
+
+        fields = ''
+        condition = ''
+
+        if ids and (len(ids) != 0):
+            condition = 'WHERE campaign.id IN :ids'
+
+        if("id" not in campaign_attributes):
+            campaign_attributes.append("id")
+
+        # Loop for campaign's attributes
+        campaign_constant = 'campaign.'
+        for field in campaign_attributes:
+            fields += (campaign_constant + field)
+            if(campaign_attributes[-1] != field):
+                fields += ','
+
+        # Loop for metric's attributes
+        if metric_attributes is not None:
+            fields += ","
+            metrics_constant = 'metrics.'
+            for field in metric_attributes:
+                fields += (metrics_constant + field)
+                if(metric_attributes[-1] != field):
+                    fields += ','
+
+        return (self.__query % (fields, condition))
 
     # map result row
     def __map_result_row(self, row):
@@ -57,7 +75,15 @@ class ExecuteCommand(BaseCommand):
     # start execution
     @override_method
     def start_execution(self):
-        responses = self.run_query(self.__query)
+        attributes = self.get_argument("attributes")
+        ids = self.get_argument("ids")
+
+        replacements = {}
+        if ids and len(ids) != 0:
+            replacements["ids"] = tuple(ids)
+
+        generated_query = self.generate_query(attributes, ids)
+        responses = self.run_query(generated_query, replacements)
         campaigns = self.__response_to_campaigns(responses)
 
         return campaigns

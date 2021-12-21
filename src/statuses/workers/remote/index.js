@@ -7,7 +7,7 @@ const constantRemoteFacebookPath = path.join(__dirname, "facebook");
 const actions = {
     remote: {
         google: {
-            "actions-intime-login": path.join(constantRemoteGooglePath,"actions-intime-login-platform.js"),
+            "statuses-sync": path.join(constantRemoteGooglePath,"statuses-sync.js"),
         },
         facebook: {
             "statuses-sync": path.join(constantRemoteFacebookPath, "statuses-sync.js"),

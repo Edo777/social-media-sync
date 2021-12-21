@@ -81,8 +81,8 @@ async function _update(data, condition) {
             "googleCampaignId" , 
             "googleAdgroupId", 
             "loginCustomerId", 
-            "clientCustomerId", 
-            "facebookUserId"
+            "clientCustomerId",
+            "googleUserId"
         ]
     };
 

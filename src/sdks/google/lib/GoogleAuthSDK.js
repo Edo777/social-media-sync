@@ -65,15 +65,20 @@ GoogleAuthSDK.prototype.setRefreshToken = function (refreshToken) {
  */
 GoogleAuthSDK.prototype.generateAuthUrl = async function (params) {
     const client = this._makeClient(params.redirect_uri);
-    return client.generateAuthUrl({
+    const opts = {
         /* eslint-disable camelcase */
         access_type: "offline",
         include_granted_scopes: true,
         response_type: "code",
         scope: params.scopes,
-        // login_hint: "some email for auth"
         /* eslint-enable camelcase */
-    });
+    };
+
+    if (params["login_hint"]) {
+        opts["login_hint"] = params["login_hint"];
+    }
+
+    return client.generateAuthUrl(opts);
 };
 
 /**

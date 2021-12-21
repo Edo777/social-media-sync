@@ -35,6 +35,7 @@ module.exports = {
     Ad: {
         create: "ad/create_ad",
         getAll: "ad/get_ads",
+        getBySpecOptions: "ad/get_ads_spec",
         get: "ad/get_ad",
         update: "ad/update_ad",
         delete: "ad/delete_ad",

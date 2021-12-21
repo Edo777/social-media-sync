@@ -5,6 +5,9 @@ const LocalCronJobs = require("./local/cronjobs");
 // Facebook
 const FacebookCampaignsDao = require("./remote/facebook/campaign");
 
+// Google
+const GoogleAdsDao = require("./remote/google/ad");
+
 module.exports = {
     // Local
     LocalAdsDao,
@@ -12,5 +15,8 @@ module.exports = {
     LocalCampaignsDao,
 
     // Facebook
-    FacebookCampaignsDao
+    FacebookCampaignsDao,
+
+    // Google
+    GoogleAdsDao
 }
