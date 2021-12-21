@@ -50,7 +50,7 @@ const makePyExecWithApi = function (api, pythonShellLogging) {
                         },
                     });
 
-                    if (true || pythonShellLogging) {
+                    if (pythonShellLogging) {
                         console.log();
                         console.log("------------------------------------------------");
                         console.log("-- Python Shell Response -----------------------");
