@@ -1,9 +1,8 @@
 const { Sequelize } = require("../../../../shared/database/models");
-const { LocalCampaignsDao, LocalAdsDao, GoogleAdsDao } = require("../../../../daos");
-const { getSdkByPlatform, getSdkByRemoteUser } = require("../../../../daos/global/sdk");
-const {EffectiveStatusDetector} = require("../../../../utils");
+const { LocalAdsDao, GoogleAdsDao } = require("../../../../daos");
+const { getSdkByPlatform } = require("../../../../daos/global/sdk");
+const {EffectiveStatusDetector, sleep} = require("../../../../utils");
 const _ = require("lodash");
-const { or, and } = Sequelize.Op;
 
 /**
  * Set sdk params
@@ -36,16 +35,19 @@ async function getSdkParams(returnSdkFor = null) {
  * @param {[{id: number, status: string, effective_status: string}]} ads 
  * @returns {[{id: number, status: string, effectiveStatus: string}]}
  */
-function formatStatuses(ads) {
+ function formatStatuses(ads) {
     const formattedAds = [];
     for (let i = 0; i < ads.length; i++) {
-        const adFromRemote = JSON.parse(JSON.stringify(ads[i]));
+        const {ad_group, campaign, status: remoteAdStatus, policySummary } = JSON.parse(JSON.stringify(ads[i]));
 
-        if (adFromRemote && adFromRemote["effective_status"] && adFromRemote["status"]) {
-            const { status, effectiveStatus } = EffectiveStatusDetector.detectFacebook(
-                adFromRemote["effective_status"],
-                adFromRemote["status"]
-            );
+        if (ad_group && campaign && policySummary && remoteAdStatus) {
+            const { status, effectiveStatus } = EffectiveStatusDetector.detectGoogle({
+                adStatus: remoteAdStatus,
+                policyStatuses: policySummary || { reviewStatus: null, approvalStatus: null },
+                adGroupStatus: ad_group.status,
+                campaignProcessingStatus: campaign.servingStatus,
+                campaignStatus: campaign.status,
+            });
 
             formattedAds.push({ id: adFromRemote.id, status, effectiveStatus });
         }
@@ -117,7 +119,7 @@ async function execute() {
 
             const dataForequest = {
                 attributes: { 
-                    campaign: ["id", "status", "name"],
+                    campaign: ["id", "status", "serving_status", "name"],
                     adGroup: ["id", "status"], 
                     adGroupAd : ["status", "policy_summary.review_status", "policy_summary.approval_status"], 
                     ad : ["id", "name"] 
@@ -144,7 +146,6 @@ async function execute() {
          */
         const finalResult = await Promise.allSettled(requestPromises);
         const successResults = (finalResult.filter((r) => r.status === "fulfilled")).map((d) => d.value);
-        return console.log(JSON.stringify(successResults[0], null, 2));
 
         /**
          * -------------------
@@ -152,9 +153,9 @@ async function execute() {
          * -------------------
          */
         const ads = [];
-        for(response of finalResult) {
-            if(response && response.responses){
-                ads.push(...response["responses"]);
+        for(response of successResults) {
+            if(response && response.length){
+                ads.push(...response);
             }
         }
 
@@ -167,21 +168,18 @@ async function execute() {
             return `${ad.status}-${ad.effectiveStatus}`;
         });
 
-        console.log(finalResult);
-
         const updatePromises = [];
         for(uniqueKey in groupedByStatuses){
             const updateAdIds = groupedByStatuses[uniqueKey].map(i => i.id);
             const [status, effectiveStatus] = uniqueKey.split("-");
 
             if(status && effectiveStatus) {
-                // updatePromises.push({status, effectiveStatus, ids: updateAdIds});
                 updatePromises.push(LocalAdsDao._update({status, effectiveStatus}, {remoteAdId: updateAdIds}));
             }
         }
 
         if(!updatePromises.length) {
-            return
+            return { status: "success", result: "success" };
         }
 
         /**
@@ -192,6 +190,7 @@ async function execute() {
         const promiseChunks = _.chunk(updatePromises, 5);
         for(const promiseChunk of promiseChunks) {
             await Promise.all(promiseChunk);
+            await sleep(3000);
         }
 
         return { status: "success", result: "success" };
