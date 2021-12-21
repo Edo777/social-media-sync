@@ -21,7 +21,6 @@ async function getAdsBySpecOptions(sdk, options) {
     try {
         return await sdk.Ad.getBySpecOptions(options)
     } catch (e) {
-        console.error(e);
         throw e;
     }
 }
