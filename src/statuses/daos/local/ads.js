@@ -82,7 +82,7 @@ async function _update(data, condition) {
             "googleAdgroupId", 
             "loginCustomerId", 
             "clientCustomerId",
-            "googleUserId"
+            "remoteUserId"
         ]
     };
 
