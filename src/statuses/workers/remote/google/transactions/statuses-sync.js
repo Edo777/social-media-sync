@@ -143,8 +143,8 @@ async function execute() {
          * -------------------------
          */
         const finalResult = await Promise.allSettled(requestPromises);
-        const successResults = finalResult.filter((r) => r.status === "fulfilled").map((d) => d.value);
-        return console.log(JSON.stringify(JSON.parse(successResults[0])));
+        const successResults = (finalResult.filter((r) => r.status === "fulfilled")).map((d) => d.value);
+        return console.log(JSON.stringify(successResults[0], null, 2));
 
         /**
          * -------------------
