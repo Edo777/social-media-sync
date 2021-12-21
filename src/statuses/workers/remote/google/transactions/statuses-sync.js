@@ -38,7 +38,7 @@ async function getSdkParams(returnSdkFor = null) {
  function formatStatuses(ads) {
     const formattedAds = [];
     for (let i = 0; i < ads.length; i++) {
-        const {ad_group, campaign, status: remoteAdStatus, policySummary } = JSON.parse(JSON.stringify(ads[i]));
+        const {ad_group, ad, campaign, status: remoteAdStatus, policySummary } = JSON.parse(JSON.stringify(ads[i]));
 
         if (ad_group && campaign && policySummary && remoteAdStatus) {
             const { status, effectiveStatus } = EffectiveStatusDetector.detectGoogle({
@@ -49,7 +49,7 @@ async function getSdkParams(returnSdkFor = null) {
                 campaignStatus: campaign.status,
             });
 
-            formattedAds.push({ id: adFromRemote.id, status, effectiveStatus });
+            formattedAds.push({ id: ad.id, status, effectiveStatus });
         }
     }
 
