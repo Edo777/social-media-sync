@@ -1,3 +1,0 @@
-
-class ClassMethodOverrideException(Exception):
-    pass

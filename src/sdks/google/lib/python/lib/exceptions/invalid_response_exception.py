@@ -1,3 +1,0 @@
-
-class InvalidResponseException(Exception):
-    pass

@@ -1,1 +1,1 @@
-module.exports = require("./lib/GoogleSDK");
+module.exports = require("@smmads/google-sdk");

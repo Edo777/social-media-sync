@@ -1,3 +1,0 @@
-
-class AbstractInstantiateException(Exception):
-    pass
