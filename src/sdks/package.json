@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@smmads/google-sdk": "^1.0.11",
+    "@smmads/google-sdk": "^1.0.12",
     "crypto-js": "^4.1.1",
     "facebook-nodejs-business-sdk": "^12.0.1",
     "googleapis": "^92.0.0"
