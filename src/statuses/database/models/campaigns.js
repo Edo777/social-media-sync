@@ -326,6 +326,15 @@ module.exports = (sequelize, DataTypes) => {
             },
         }
     );
-    
+
+    SocialCampaigns.associate = function (models) {
+        SocialCampaigns.hasMany(models["SocialAds"], {
+            onDelete: "CASCADE",
+            onUpdate: "CASCADE",
+            foreignKey: "campaignId",
+            as: "ads",
+        });
+    }
+
     return SocialCampaigns;
 };

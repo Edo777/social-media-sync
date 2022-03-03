@@ -58,7 +58,20 @@ async function getFacebookCampaignsForStatusSync() {
         facebookIsActive: true,
         facebookUserId : {[ne] : null}, 
         facebookId: {[ne] : null}
-    }, { attributes: ["id", "facebookId" , "facebookAdAccountId", "facebookAdAccountOwnerId", "facebookUserId"] });
+    }, { 
+        attributes: ["id", "facebookId" , "facebookAdAccountId", "facebookAdAccountOwnerId", "facebookUserId"] ,
+        include: {
+            model: SocialAds,
+            as: "ads",
+            where: { 
+                isActive: true, 
+                remoteAdId:  { [ne] : null },
+                status: "active"
+            },
+            required: true,
+            attributes: ["remoteAdId", "effectiveStatus"]
+        }
+    });
 }
 
 module.exports = {

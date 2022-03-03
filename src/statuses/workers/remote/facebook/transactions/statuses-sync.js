@@ -50,7 +50,7 @@ function formatStatuses(ads) {
  * @param {any} remoteUserId
  * @returns {{status :string, result: any}}
  */
-async function execute() {
+async function execute1() {
     try {
         const campaigns = await LocalCampaignsDao.getFacebookCampaignsForStatusSync();
 
@@ -104,6 +104,158 @@ async function execute() {
             campaignIds.forEach((campaignId) => {
                 dataForequest.push({ 
                     campaignId , adFields: ["id", "status", "effective_status"]
+                });
+            });
+
+            const promise = FacebookCampaignsDao.bulkReadAds(neededSdk, dataForequest);
+            requestPromises.push(promise);
+        });
+
+        if(!requestPromises.length) {
+            return { status: "success", result: "success" };
+        }
+
+        /**
+         * -------------------------
+         * | EXECUTE BULK REQUESTS |
+         * -------------------------
+         */
+        const finalResult = await Promise.all(requestPromises);
+
+        /**
+         * -------------------
+         * | MODIFY RESPONSE |
+         * -------------------
+         */
+        const ads = [];
+        for(response of finalResult) {
+            if(response && response.responses){
+                ads.push(...response["responses"]);
+            }
+        }
+
+        if(!ads.length) {
+            return { status: "success", result: "success" };
+        }
+
+        const formattedAds = formatStatuses(ads);
+        const groupedByStatuses = _.groupBy(formattedAds, (ad) => {
+            return `${ad.status}-${ad.effectiveStatus}`;
+        });
+
+        console.log(finalResult);
+
+        const updatePromises = [];
+        for(uniqueKey in groupedByStatuses){
+            const updateAdIds = groupedByStatuses[uniqueKey].map(i => i.id);
+            const [status, effectiveStatus] = uniqueKey.split("-");
+
+            if(status && effectiveStatus) {
+                // updatePromises.push({status, effectiveStatus, ids: updateAdIds});
+                updatePromises.push(LocalAdsDao._update({status, effectiveStatus}, {remoteAdId: updateAdIds}));
+            }
+        }
+
+        if(!updatePromises.length) {
+            return
+        }
+
+        /**
+         * ---------------------------
+         * | SPLIT UPDATES TO CHUNKS |
+         * ---------------------------
+         */
+        const promiseChunks = _.chunk(updatePromises, 5);
+        for(const promiseChunk of promiseChunks) {
+            await Promise.all(promiseChunk);
+        }
+
+        return { status: "success", result: "success" };
+    } catch (error) {
+        console.log(error)
+        return { status: "failed", result: error.message || "unknown error" };
+    }
+}
+
+/**
+ * Filter active ad
+ * @param {{
+ *  endDate: string | null | 0;
+ *  status: string;
+ *  effectiveStatus: string;
+ * }} ad 
+ * @returns 
+ */
+function filterActiveAd(ad) {
+    return ["active", "pending", "pending_billing_info", "pending_review"].includes(ad.effectiveStatus);
+}
+
+/**
+ * Set active the unactive ads and campaigns of logged user
+ * @param {number} userId
+ * @param {any} remoteUserId
+ * @returns {{status :string, result: any}}
+ */
+ async function execute() {
+    try {
+        const campaigns = await LocalCampaignsDao.getFacebookCampaignsForStatusSync();
+        
+        if(!campaigns.length) {
+            return { status: "success", result: "success" };
+        }
+
+        /**
+         * ----------------------------------------------
+         * | GENERATE SDK LIST FOR EACH CAMPAIGN's USER |
+         * ----------------------------------------------
+         */
+        const sdksList = {};
+        for(let i = 0; i < campaigns.length; i++) {
+            const { facebookId, facebookAdAccountOwnerId , ads } = campaigns[i];
+
+            if(!sdksList.hasOwnProperty(facebookAdAccountOwnerId)) {
+                sdksList[facebookAdAccountOwnerId] = {
+                    sdk: null, 
+                    campaignIds: {}
+                };
+            }
+
+            if(!sdksList[facebookAdAccountOwnerId].sdk) {
+                try {
+                    const {sdk: sdkOfCurrentUser} = await getSdkParams(facebookAdAccountOwnerId);
+                    sdksList[facebookAdAccountOwnerId].sdk = sdkOfCurrentUser;
+                } catch (error) {
+                    continue;
+                }
+            }
+
+            // Take only active ads
+            const filteredAds = ads.filter(filterActiveAd);
+
+            if(filteredAds.length) {
+                sdksList[facebookAdAccountOwnerId].campaignIds[facebookId] = filteredAds.map(a => a.remoteAdId);
+            }
+        }
+
+        if(!Object.keys(sdksList).length) {
+            return { status: "success", result: "success" };
+        }
+
+        /**
+         * ---------------------------------------
+         * | GENERATE Promises for bulk requests |
+         * ---------------------------------------
+         */
+        const requestPromises = [];
+        Object.keys(sdksList).forEach((row) => {
+            const {sdk: neededSdk, campaignIds} = sdksList[row];
+
+            const dataForequest = [];
+            Object.keys(campaignIds).forEach((campaignId) => {
+                dataForequest.push({ 
+                    campaignId , 
+                    adIds: campaignIds[campaignId],
+                    adFields: ["id", "status", "effective_status"]
                 });
             });
 
