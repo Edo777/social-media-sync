@@ -13,7 +13,7 @@ const { APIRequest } = require("../../../../sdks/facebook");
  *  errors: [[object]]
  * }]>}
  */
-function bulkReadAds(sdk, data) {
+async function bulkReadAds(sdk, data) {
     if(!sdk) {
         return false;
     }
