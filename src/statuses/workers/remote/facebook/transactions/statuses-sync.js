@@ -50,7 +50,7 @@ function formatStatuses(ads) {
  * @param {any} remoteUserId
  * @returns {{status :string, result: any}}
  */
-async function execute1() {
+async function execute() {
     try {
         const campaigns = await LocalCampaignsDao.getFacebookCampaignsForStatusSync();
 
@@ -65,7 +65,7 @@ async function execute1() {
          */
         const sdksList = {};
         for(let i = 0; i < campaigns.length; i++) {
-            const { facebookId, facebookAdAccountOwnerId } = campaigns[i];
+            const { facebookId, facebookAdAccountOwnerId, ads } = campaigns[i];
 
             if(!sdksList.hasOwnProperty(facebookAdAccountOwnerId)) {
                 sdksList[facebookAdAccountOwnerId] = {
@@ -83,8 +83,12 @@ async function execute1() {
                 }
             }
 
-            sdksList[facebookAdAccountOwnerId].campaignIds.push(facebookId);
+            // Take only active ads
+            const filteredAds = ads.filter(filterActiveAd);
 
+            if(filteredAds.length) {
+                sdksList[facebookAdAccountOwnerId].campaignIds.push(facebookId);
+            }
         }
 
         if(!Object.keys(sdksList).length) {
@@ -196,7 +200,7 @@ function filterActiveAd(ad) {
  * @param {any} remoteUserId
  * @returns {{status :string, result: any}}
  */
-async function execute() {
+async function executeTest() {
     try {
         const campaigns = await LocalCampaignsDao.getFacebookCampaignsForStatusSync();
         
