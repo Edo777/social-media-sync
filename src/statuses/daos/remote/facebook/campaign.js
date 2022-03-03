@@ -13,17 +13,17 @@ const { APIRequest } = require("../../../../sdks/facebook");
  *  errors: [[object]]
  * }]>}
  */
-async function bulkReadAds(sdk, data) {
-    if(!sdk) {
-        return false;
-    }
-
+function bulkReadAds(sdk, data) {
     return new Promise(async (resolve, reject) => {
         let countOfRequests = 0;
         let countOfResponses = 0;
 
         const responses = [];
         const errors = [];
+
+        if(!sdk) {
+            return resolve({responses, errors});
+        }
 
         // use batch api
         const apiBatch = await sdk.apiBatch();
