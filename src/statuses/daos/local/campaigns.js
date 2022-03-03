@@ -65,6 +65,7 @@ async function getFacebookCampaignsForStatusSync() {
             as: "ads",
             where: { 
                 isActive: true, 
+                provider: ["facebook", "instagram"],
                 remoteAdId:  { [ne] : null },
                 status: "active"
             },

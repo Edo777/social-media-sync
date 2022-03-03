@@ -104,15 +104,32 @@ async function execute() {
         Object.keys(sdksList).forEach((row) => {
             const {sdk: neededSdk, campaignIds} = sdksList[row];
 
-            const dataForequest = [];
-            campaignIds.forEach((campaignId) => {
-                dataForequest.push({ 
-                    campaignId , adFields: ["id", "status", "effective_status"]
-                });
-            });
+            if(campaignIds.length > 50) {
+                const chunkCount = Math.ceil(campaignIds / 50);
+                const idsChunked = _.chunk(campaignIds, chunkCount);
 
-            const promise = FacebookCampaignsDao.bulkReadAds(neededSdk, dataForequest);
-            requestPromises.push(promise);
+                for(let i = 0; i < idsChunked.length; i++) {
+                    const dataForequest = [];
+                    idsChunked[i].forEach((campaignId) => {
+                        dataForequest.push({ 
+                            campaignId , adFields: ["id", "status", "effective_status"]
+                        });
+                    });
+
+                    const promise = FacebookCampaignsDao.bulkReadAds(neededSdk, dataForequest);
+                    requestPromises.push(promise);
+                }
+            } else {
+                const dataForequest = [];
+                campaignIds.forEach((campaignId) => {
+                    dataForequest.push({ 
+                        campaignId , adFields: ["id", "status", "effective_status"]
+                    });
+                });
+    
+                const promise = FacebookCampaignsDao.bulkReadAds(neededSdk, dataForequest);
+                requestPromises.push(promise);
+            }
         });
 
         if(!requestPromises.length) {
@@ -146,8 +163,6 @@ async function execute() {
         const groupedByStatuses = _.groupBy(formattedAds, (ad) => {
             return `${ad.status}-${ad.effectiveStatus}`;
         });
-
-        console.log(finalResult);
 
         const updatePromises = [];
         for(uniqueKey in groupedByStatuses){
