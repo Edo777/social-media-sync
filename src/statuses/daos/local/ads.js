@@ -70,8 +70,8 @@ async function _update(data, condition) {
      const condition = {
         isActive: true,
         remoteAdId: {[ne] : null},
-        status: "active",
-        effectiveStatus: ["active", "pending", "pending_billing_info", "pending_review"],
+        // status: "active",
+        // effectiveStatus: ["active", "pending", "pending_billing_info", "pending_review"],
         googleCampaignId : {[ne] : null}, 
         googleAdgroupId: {[ne] : null}
     };

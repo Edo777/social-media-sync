@@ -196,7 +196,7 @@ function filterActiveAd(ad) {
  * @param {any} remoteUserId
  * @returns {{status :string, result: any}}
  */
- async function execute() {
+async function execute() {
     try {
         const campaigns = await LocalCampaignsDao.getFacebookCampaignsForStatusSync();
         
