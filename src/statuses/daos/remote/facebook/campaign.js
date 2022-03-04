@@ -79,7 +79,12 @@ function bulkReadAds(sdk, data) {
 
         try {
             await apiBatch.execute();
+            console.log("--------------------------------------------------------")
+            console.log("REQUESTS " + countOfRequests + " RESPONSES " + countOfResponses);
+            console.log("RESPONSES LENGTH " + responses.length, " ERRORS LENGTH " + errors.length);
+            console.log("--------------------------------------------------------")
         } catch (error) {
+            console.log("ERROR IN TIME EXECUTION OR BATCH");
             return reject(error)
         }
     });

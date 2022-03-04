@@ -136,12 +136,20 @@ async function execute() {
             return { status: "success", result: "success" };
         }
 
+        console.log("--------------------------------------------------------")
+        console.log("GOT TO EXECUTE PROMISES COUNT= " + requestPromises.length);
+        console.log("--------------------------------------------------------")
+
         /**
          * -------------------------
          * | EXECUTE BULK REQUESTS |
          * -------------------------
          */
         const finalResult = await Promise.all(requestPromises);
+
+        console.log("--------------------------------------------------------")
+        console.log("EXECUTED PROMISES " + requestPromises.length);
+        console.log("--------------------------------------------------------")
 
         /**
          * -------------------
@@ -191,7 +199,11 @@ async function execute() {
 
         return { status: "success", result: "success" };
     } catch (error) {
-        console.log(error)
+        console.log("--------------------------------------------------------");
+        console.log("ERROR EXECUTED");
+        console.log("--------------------------------------------------------");
+
+        // console.log(error)
         return { status: "failed", result: error.message || "unknown error" };
     }
 }
