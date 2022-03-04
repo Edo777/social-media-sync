@@ -18,11 +18,11 @@ async function facebookStatusesSync() {
 }
 
 module.exports = function (schedule) {
-    schedule("*/11 * * * *", async function () {
+    schedule("*/30 * * * *", async function () {
         facebookStatusesSync();
     });
 
-    schedule("*/11 * * * *", async function () {
+    schedule("*/30 * * * *", async function () {
         googleStatusesSync();
     });
 };
