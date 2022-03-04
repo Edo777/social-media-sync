@@ -45,6 +45,47 @@ function formatStatuses(ads) {
 }
 
 /**
+ * Will create array for bulk requests
+ * @param {FacebookSDK} sdk 
+ * @param {[string]} campaignIds 
+ * @returns {[Promise<[object]>]}
+ */
+function generatePromisesBulkRead(sdk, campaignIds) {
+    const requestPromises = []
+
+    if(sdk && campaignIds && campaignIds.length) {
+        if(campaignIds.length > 50) {
+            const chunkCount = Math.ceil(campaignIds.length / 50);
+            const idsChunked = _.chunk(campaignIds, chunkCount);
+    
+            for(let i = 0; i < idsChunked.length; i++) {
+                const dataForequest = [];
+                idsChunked[i].forEach((campaignId) => {
+                    dataForequest.push({ 
+                        campaignId , adFields: ["id", "status", "effective_status"]
+                    });
+                });
+    
+                const promise = FacebookCampaignsDao.bulkReadAds(sdk, dataForequest);
+                requestPromises.push(promise);
+            }
+        } else {
+            const dataForequest = [];
+            campaignIds.forEach((campaignId) => {
+                dataForequest.push({ 
+                    campaignId , adFields: ["id", "status", "effective_status"]
+                });
+            });
+    
+            const promise = FacebookCampaignsDao.bulkReadAds(sdk, dataForequest);
+            requestPromises.push(promise);
+        }
+    }
+
+    return requestPromises;
+}
+
+/**
  * Set active the unactive ads and campaigns of logged user
  * @param {number} userId
  * @param {any} remoteUserId
@@ -103,42 +144,14 @@ async function execute() {
         const requestPromises = [];
         Object.keys(sdksList).forEach((row) => {
             const {sdk: neededSdk, campaignIds} = sdksList[row];
+            const promisesOfBulkRead = generatePromisesBulkRead(neededSdk, campaignIds);
 
-            if(campaignIds.length > 50) {
-                const chunkCount = Math.ceil(campaignIds / 50);
-                const idsChunked = _.chunk(campaignIds, chunkCount);
-
-                for(let i = 0; i < idsChunked.length; i++) {
-                    const dataForequest = [];
-                    idsChunked[i].forEach((campaignId) => {
-                        dataForequest.push({ 
-                            campaignId , adFields: ["id", "status", "effective_status"]
-                        });
-                    });
-
-                    const promise = FacebookCampaignsDao.bulkReadAds(neededSdk, dataForequest);
-                    requestPromises.push(promise);
-                }
-            } else {
-                const dataForequest = [];
-                campaignIds.forEach((campaignId) => {
-                    dataForequest.push({ 
-                        campaignId , adFields: ["id", "status", "effective_status"]
-                    });
-                });
-    
-                const promise = FacebookCampaignsDao.bulkReadAds(neededSdk, dataForequest);
-                requestPromises.push(promise);
-            }
+            requestPromises.push(...promisesOfBulkRead);
         });
 
         if(!requestPromises.length) {
             return { status: "success", result: "success" };
         }
-
-        console.log("--------------------------------------------------------")
-        console.log("GOT TO EXECUTE PROMISES COUNT= " + requestPromises.length);
-        console.log("--------------------------------------------------------")
 
         /**
          * -------------------------
@@ -146,10 +159,6 @@ async function execute() {
          * -------------------------
          */
         const finalResult = await Promise.all(requestPromises);
-
-        console.log("--------------------------------------------------------")
-        console.log("EXECUTED PROMISES " + requestPromises.length);
-        console.log("--------------------------------------------------------")
 
         /**
          * -------------------
@@ -178,7 +187,6 @@ async function execute() {
             const [status, effectiveStatus] = uniqueKey.split("-");
 
             if(status && effectiveStatus) {
-                // updatePromises.push({status, effectiveStatus, ids: updateAdIds});
                 updatePromises.push(LocalAdsDao._update({status, effectiveStatus}, {remoteAdId: updateAdIds}));
             }
         }
@@ -199,11 +207,7 @@ async function execute() {
 
         return { status: "success", result: "success" };
     } catch (error) {
-        console.log("--------------------------------------------------------");
-        console.log("ERROR EXECUTED");
-        console.log("--------------------------------------------------------");
-
-        // console.log(error)
+        console.log(error)
         return { status: "failed", result: error.message || "unknown error" };
     }
 }

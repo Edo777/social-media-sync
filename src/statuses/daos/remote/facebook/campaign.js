@@ -15,9 +15,6 @@ const { APIRequest } = require("../../../../sdks/facebook");
  */
 function bulkReadAds(sdk, data) {
     return new Promise(async (resolve, reject) => {
-        let countOfRequests = 0;
-        let countOfResponses = 0;
-
         const responses = [];
         const errors = [];
 
@@ -46,7 +43,6 @@ function bulkReadAds(sdk, data) {
             apiBatch.addRequest(
                 request,
                 (response) => {
-                    countOfResponses++;
                     if(response.body) {
                         if(response.body.data.length) {
                             for(d of response.body.data){
@@ -59,34 +55,22 @@ function bulkReadAds(sdk, data) {
                             
                         }
                     }
-
-                    // if(countOfResponses >= countOfRequests) {
-                    //     return resolve({responses, errors});
-                    // }
                 },
                 (response) => {
-                    countOfResponses++;
                     if(response.error) {
                         errors.push(response.error);
                     }
-
-                    // if(countOfResponses >= countOfRequests) {
-                    //     return resolve({responses, errors});
-                    // }
                 }
             );
         }
 
         try {
             await apiBatch.execute();
-            console.log("--------------------------------------------------------")
-            console.log("REQUESTS " + countOfRequests + " RESPONSES " + countOfResponses);
-            console.log("RESPONSES LENGTH " + responses.length, " ERRORS LENGTH " + errors.length);
-            console.log("--------------------------------------------------------")
+            console.log(responses.length, errors.length, "--------------------");
             return resolve({responses, errors});
         } catch (error) {
             console.log("ERROR IN TIME EXECUTION OR BATCH");
-            return reject(error)
+            return resolve({responses, errors});
         }
     });
 }
