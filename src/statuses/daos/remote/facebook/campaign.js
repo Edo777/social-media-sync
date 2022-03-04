@@ -27,7 +27,6 @@ function bulkReadAds(sdk, data) {
 
         // Create requests for batch execution
         for (let i = 0; i < data.length; i++) {
-            countOfRequests++;
             const { campaignId, adIds, adFields } = data[i];
             const url = `/ads`;
             const request = new APIRequest(campaignId, "GET", url);
@@ -58,7 +57,7 @@ function bulkReadAds(sdk, data) {
                 },
                 (response) => {
                     if(response.error) {
-                        errors.push(response.error);
+                        errors.push(response.error.message);
                     }
                 }
             );
@@ -66,7 +65,7 @@ function bulkReadAds(sdk, data) {
 
         try {
             await apiBatch.execute();
-            console.log(responses.length, errors.length, "--------------------");
+            console.log(errors, "------------");
             return resolve({responses, errors});
         } catch (error) {
             console.log("ERROR IN TIME EXECUTION OR BATCH");
