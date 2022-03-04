@@ -60,9 +60,9 @@ function bulkReadAds(sdk, data) {
                         }
                     }
 
-                    if(countOfResponses >= countOfRequests) {
-                        return resolve({responses, errors});
-                    }
+                    // if(countOfResponses >= countOfRequests) {
+                    //     return resolve({responses, errors});
+                    // }
                 },
                 (response) => {
                     countOfResponses++;
@@ -70,9 +70,9 @@ function bulkReadAds(sdk, data) {
                         errors.push(response.error);
                     }
 
-                    if(countOfResponses >= countOfRequests) {
-                        return resolve({responses, errors});
-                    }
+                    // if(countOfResponses >= countOfRequests) {
+                    //     return resolve({responses, errors});
+                    // }
                 }
             );
         }
@@ -83,6 +83,7 @@ function bulkReadAds(sdk, data) {
             console.log("REQUESTS " + countOfRequests + " RESPONSES " + countOfResponses);
             console.log("RESPONSES LENGTH " + responses.length, " ERRORS LENGTH " + errors.length);
             console.log("--------------------------------------------------------")
+            return resolve({responses, errors});
         } catch (error) {
             console.log("ERROR IN TIME EXECUTION OR BATCH");
             return reject(error)
