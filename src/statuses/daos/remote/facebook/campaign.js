@@ -19,7 +19,7 @@ function bulkReadAds(sdk, data) {
         const errors = [];
 
         if(!sdk) {
-            return resolve({responses, errors});
+            return resolve({ responses, errors });
         }
 
         // use batch api
@@ -57,7 +57,11 @@ function bulkReadAds(sdk, data) {
                 },
                 (response) => {
                     if(response.error) {
-                        errors.push(response.error.message);
+                        errors.push({
+                            message : response.error.message,
+                            status: response.error.status,
+                            headers: response.error.headers
+                        });
                     }
                 }
             );
@@ -65,7 +69,7 @@ function bulkReadAds(sdk, data) {
 
         try {
             await apiBatch.execute();
-            console.log(errors, "------------");
+            
             return resolve({responses, errors});
         } catch (error) {
             console.log("ERROR IN TIME EXECUTION OR BATCH");
