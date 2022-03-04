@@ -222,7 +222,7 @@ async function execute() {
  * @returns 
  */
 function filterActiveAd(ad) {
-    return ["active", "pending", "pending_billing_info", "pending_review"].includes(ad.effectiveStatus);
+    return ad.effectiveStatus === null || ["active", "pending", "pending_billing_info", "pending_review"].includes(ad.effectiveStatus);
 }
 
 /**
