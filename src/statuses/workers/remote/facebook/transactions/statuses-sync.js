@@ -164,11 +164,11 @@ async function execute() {
             requestPromises.push(...promisesOfBulkRead);
 
             // create data for calculate requests count
-            if(sdk && sdk.authData && sdk.authData.facebookUserId) {
-                if(!dataForRequestsCountCalculation.hasOwnProperty(sdk.authData.facebookUserId)) {
-                    dataForRequestsCountCalculation[sdk.authData.facebookUserId] = campaignIds.length
+            if(neededSdk && neededSdk.authData && neededSdk.authData.facebookUserId) {
+                if(!dataForRequestsCountCalculation.hasOwnProperty(neededSdk.authData.facebookUserId)) {
+                    dataForRequestsCountCalculation[neededSdk.authData.facebookUserId] = campaignIds.length
                 }else{
-                    dataForRequestsCountCalculation[sdk.authData.facebookUserId] += campaignIds.length
+                    dataForRequestsCountCalculation[neededSdk.authData.facebookUserId] += campaignIds.length
                 }
             }
         });
