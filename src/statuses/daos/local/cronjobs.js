@@ -1,4 +1,5 @@
-const { StatusSyncCronjobs } = require("../../shared/database/models");
+const { StatusSyncCronjobs, StatusSyncApiCalls , Sequelize} = require("../../shared/database/models");
+const { ne } = Sequelize.Op;
 const workerTasks = require("../../workers/remote");
 
 /**
@@ -24,6 +25,32 @@ async function syncStatuses(platform, CRON_CODE) {
     // start worker
     await workerTasks(platform, "statuses-sync", {});
     
+    // end cronjob
+    await updateJob(CRON_CODE, true);
+}
+
+/**
+ * Reset all api calls count
+ * @param {number} CRON_CODE
+ * @param {object} condition 
+ * @returns 
+ */
+async function resetApiCallsCount(CRON_CODE, condition) {
+    const canWork = await canStartJob(CRON_CODE);
+
+    if(!canWork) {
+        return
+    }
+    
+    // Start cronjob
+    await updateJob(CRON_CODE, false);
+
+    // Reset api calls
+    await StatusSyncApiCalls.update(
+        { count: 0 }, 
+        { where : condition || { id: {[ne]: null} }
+    })
+
     // end cronjob
     await updateJob(CRON_CODE, true);
 }
@@ -60,6 +87,7 @@ async function updateJob(JOB_CODE, finished) {
 }
 
 module.exports = {
+    resetApiCallsCount,
     syncStatuses,
     canStartJob,
     updateJob,

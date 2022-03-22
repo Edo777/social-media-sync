@@ -1,4 +1,5 @@
 const { APIRequest } = require("../../../../sdks/facebook");
+const { createApiCall } = require("../../local/api_calls");
 
 /**
  * Get ads of campaign
@@ -68,6 +69,14 @@ function bulkReadAds(sdk, data) {
         }
 
         try {
+            // Set calls count to database
+            if(sdk.authData && sdk.facebookUserId) {
+                await createApiCall(sdk.facebookUserId, {
+                    provider: "facebook",
+                    count: data.length
+                });
+            }
+            
             await apiBatch.execute();
             
             return resolve({responses, errors});
