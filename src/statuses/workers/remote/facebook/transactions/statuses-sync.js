@@ -52,7 +52,7 @@ function formatStatuses(ads) {
 async function createApiCallsCount(data) {
     for(const remoteId in data) {
         await LocalApiCallsDao.createApiCall(remoteId, {
-            count: obj[remoteId],
+            count: data[remoteId],
             provider: "facebook"
         })
     }
