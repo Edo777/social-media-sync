@@ -4,7 +4,7 @@ const utils = require("../../shared/database/utils");
 module.exports = (sequelize, DataTypes) => {
     const StatusSyncCronjobs = utils.model(sequelize, "StatusSyncApiCalls", {
         provider: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         providerUserId: {

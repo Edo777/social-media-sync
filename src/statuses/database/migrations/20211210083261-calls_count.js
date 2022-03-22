@@ -8,7 +8,7 @@ module.exports = {
             { name: "StatusSyncApiCalls", start: 1 },
             {
                 provider: {
-                    type: Sequelize.INTEGER,
+                    type: Sequelize.STRING,
                     allowNull: false,
                 },
                 providerUserId: {

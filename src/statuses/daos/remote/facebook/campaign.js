@@ -70,13 +70,13 @@ function bulkReadAds(sdk, data) {
 
         try {
             // Set calls count to database
-            if(sdk.authData && sdk.facebookUserId) {
-                await createApiCall(sdk.facebookUserId, {
+            if(sdk.authData && sdk.authData.facebookUserId) {
+                await createApiCall(sdk.authData.facebookUserId, {
                     provider: "facebook",
                     count: data.length
                 });
             }
-            
+
             await apiBatch.execute();
             
             return resolve({responses, errors});
