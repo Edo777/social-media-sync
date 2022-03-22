@@ -3,6 +3,7 @@ const { LocalCampaignsDao, LocalAdsDao, FacebookCampaignsDao } = require("../../
 const { getSdkByPlatform } = require("../../../../daos/global/sdk");
 const {EffectiveStatusDetector} = require("../../../../utils");
 const _ = require("lodash");
+const { createApiCall } = require("../../../../daos/local/api_calls");
 const { or, and } = Sequelize.Op;
 
 /**
@@ -42,6 +43,20 @@ function formatStatuses(ads) {
     }
 
     return formattedAds;
+}
+
+/**
+ * Create api calls predicted count
+ * @param {{ [facebookUserId] : [requestsCount] }}
+ * @returns 
+ */
+async function createApiCallsCount(data) {
+    for(const remoteId in data) {
+        await createApiCall(remoteId, {
+            count: obj[remoteId],
+            provider: "facebook"
+        })
+    }
 }
 
 /**
@@ -141,17 +156,30 @@ async function execute() {
          * | GENERATE Promises for bulk requests |
          * ---------------------------------------
          */
+        const dataForRequestsCountCalculation  = {};
         const requestPromises = [];
         Object.keys(sdksList).forEach((row) => {
             const {sdk: neededSdk, campaignIds} = sdksList[row];
             const promisesOfBulkRead = generatePromisesBulkRead(neededSdk, campaignIds);
 
             requestPromises.push(...promisesOfBulkRead);
+
+            // create data for calculate requests count
+            if(sdk && sdk.authData && sdk.authData.facebookUserId) {
+                if(!dataForRequestsCountCalculation.hasOwnProperty(sdk.authData.facebookUserId)) {
+                    dataForRequestsCountCalculation[sdk.authData.facebookUserId] = campaignIds.length
+                }else{
+                    dataForRequestsCountCalculation[sdk.authData.facebookUserId] += campaignIds.length
+                }
+            }
         });
 
         if(!requestPromises.length) {
             return { status: "success", result: "success" };
         }
+
+        // Create requests count
+        await createApiCallsCount(dataForRequestsCountCalculation);
 
         /**
          * -------------------------
