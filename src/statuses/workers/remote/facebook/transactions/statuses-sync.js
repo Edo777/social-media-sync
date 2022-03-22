@@ -1,9 +1,8 @@
 const { Sequelize } = require("../../../../shared/database/models");
-const { LocalCampaignsDao, LocalAdsDao, FacebookCampaignsDao } = require("../../../../daos");
+const { LocalCampaignsDao, LocalAdsDao, FacebookCampaignsDao, LocalApiCallsDao } = require("../../../../daos");
 const { getSdkByPlatform } = require("../../../../daos/global/sdk");
 const {EffectiveStatusDetector} = require("../../../../utils");
 const _ = require("lodash");
-const { createApiCall } = require("../../../../daos/local/api_calls");
 const { or, and } = Sequelize.Op;
 
 /**
@@ -52,7 +51,7 @@ function formatStatuses(ads) {
  */
 async function createApiCallsCount(data) {
     for(const remoteId in data) {
-        await createApiCall(remoteId, {
+        await LocalApiCallsDao.createApiCall(remoteId, {
             count: obj[remoteId],
             provider: "facebook"
         })
