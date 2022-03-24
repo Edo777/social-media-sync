@@ -274,14 +274,17 @@ async function execute() {
          */
         const groupedAdsByUser = _.groupBy(filteredAds, "remoteUserId");
         Object.keys(groupedAdsByUser).forEach(userId => {
-            groupedAdsByUser[userId] = _.groupBy(groupedAdsByUser[userId], (account) => {
+            groupedAdsByUser[userId] = _.groupBy(groupedAdsByUser[userId], function(account){
                 return `${account.adAccountId}`;
             });
 
             Object.keys(groupedAdsByUser[userId]).forEach((accountId) => {
-                groupedAdsByUser[userId][accountId] = groupedAdsByUser[userId][accountId].map(ad => ad.remoteId);
+                groupedAdsByUser[userId][accountId] = groupedAdsByUser[userId][accountId].map(ad => ad.remoteAdId);
             })
         });
+
+        console.log(JSON.stringify(groupedAdsByUser, null, 2));
+        return { status: "success", result: "success" };
 
         /**
          * --------------------------
