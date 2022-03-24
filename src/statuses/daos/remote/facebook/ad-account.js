@@ -15,9 +15,10 @@ const { AdAccount } = require("../../../../sdks/facebook");
  */
 async function getAds(sdk, data) {
     try {
-        const adAccount = sdk.instance(AdAccount);
+        const adAccount = sdk.instance(AdAccount, {id: data.adAccountId});
 
         let fields = data.adFields || [
+            'id',
             'status',
             'effective_status'
         ];
