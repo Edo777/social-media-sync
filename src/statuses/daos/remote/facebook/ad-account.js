@@ -13,7 +13,7 @@ const { AdAccount } = require("../../../../sdks/facebook");
  *  errors: [[object]]
  * }]>}
  */
-function getAds(sdk, data) {
+async function getAds(sdk, data) {
     try {
         const adAccount = sdk.instance(AdAccount, {id: data.adAccountId});
 
