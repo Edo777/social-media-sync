@@ -309,5 +309,12 @@ module.exports = (sequelize, DataTypes) => {
         }
     );
 
+    SocialAds.belongsTo(models["SocialAdAccounts"], {
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+        foreignKey: "adAccountId",
+        as: "adAccount",
+    });
+
     return SocialAds;
 };
