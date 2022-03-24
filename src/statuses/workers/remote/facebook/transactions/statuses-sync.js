@@ -301,7 +301,7 @@ async function execute() {
                 const adIds = groupedAdsByUser[userId][accountId];
 
                 const promise = FacebookAdAccountsDao.getAds(sdk, {
-                    adAccountId,
+                    adAccountId: accountId.toString(),
                     adIds
                 });
 
