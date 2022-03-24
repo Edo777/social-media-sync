@@ -19,13 +19,14 @@ async function getAds(sdk, data) {
 
         let fields = data.adFields || [
             'status',
-            'effectiveStatus'
+            'effective_status'
         ];
 
-        let params = { 'id' : data.adIds.join(",") };
+        let params = { id : data.adIds };
 
         return await adAccount.getAds(fields, params);
     } catch (error) {
+        console.log(error);
         console.log("ERROR IN TIME LOAD ADS OF ACCOUNT ->" + data.adAccountId);
         console.log("ERROR MESSAGE " , error.message);
         return [];
