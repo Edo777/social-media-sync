@@ -22,7 +22,7 @@ async function getAds(sdk, data) {
             'effectiveStatus'
         ];
 
-        let params = { 'id' : data.adIds };
+        let params = { 'id' : data.adIds.join(",") };
 
         return await adAccount.getAds(fields, params);
     } catch (error) {
