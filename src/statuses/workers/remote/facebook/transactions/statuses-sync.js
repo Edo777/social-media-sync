@@ -1,6 +1,6 @@
 const { Sequelize } = require("../../../../shared/database/models");
-const { LocalCampaignsDao, LocalAdsDao, FacebookCampaignsDao, LocalApiCallsDao } = require("../../../../daos");
-const { getSdkByPlatform } = require("../../../../daos/global/sdk");
+const { LocalCampaignsDao, LocalAdsDao, FacebookCampaignsDao, LocalApiCallsDao, FacebookAdAccountsDao } = require("../../../../daos");
+const { getSdkByPlatform, getSdkByRemoteUser } = require("../../../../daos/global/sdk");
 const {EffectiveStatusDetector} = require("../../../../utils");
 const _ = require("lodash");
 const { or, and } = Sequelize.Op;
@@ -19,6 +19,17 @@ async function getSdkParams(userId, facebookUserId = null) {
     }
 
     return { sdk, remoteUserId: facebookUserId };
+}
+
+/**
+ * Get sdk and remote user
+ * @param {number} id
+ * @returns {{ sdk: any, remoteUserId: string }}
+ */
+ async function getSdkParamsByRemoteUser(id) {
+    const sdk = await getSdkByRemoteUser("facebook", id);
+
+    return sdk;
 }
 
 /**
@@ -240,6 +251,137 @@ async function execute() {
 }
 
 /**
+ * Set active the unactive ads and campaigns of logged user
+ * @param {number} userId
+ * @param {any} remoteUserId
+ * @returns {{status :string, result: any}}
+ */
+ async function execute2() {
+    try {
+        const backendAds = await LocalAdsDao.getFacebookAdsForStatusSync();
+
+        // Take only active ads
+        const filteredAds = backendAds.filter(filterActiveAd);
+
+        if(!filteredAds.length) {
+            return { status: "success", result: "success" };
+        }
+
+        /**
+         * ---------------------------------------------
+         * | GROUP ADS -> remoteUser:adAccountId:adIds |
+         * ---------------------------------------------
+         */
+        const groupedAdsByUser = _.groupBy(filteredAds, "remoteUserId");
+        Object.keys(groupedAdsByUser).forEach(userId => {
+            groupedAdsByUser[userId] = _.groupBy(groupedAdsByUser[userId], (account) => {
+                return `${account.adAccountId}`;
+            });
+
+            Object.keys(groupedAdsByUser[userId]).forEach((accountId) => {
+                groupedAdsByUser[userId][accountId] = groupedAdsByUser[userId][accountId].map(ad => ad.remoteId);
+            })
+        });
+
+        /**
+         * --------------------------
+         * | GENERATE LOAD PROMISES |
+         * --------------------------
+         */
+        const dataForRequestsCountCalculation  = {};
+        const requestPromises = [];
+        for(const userId in groupedAdsByUser) {
+            const sdk = await getSdkParamsByRemoteUser(userId);
+
+            if(!sdk) {
+                continue;
+            }
+
+            Object.keys(groupedAdsByUser[userId]).forEach(accountId => {
+                const adIds = groupedAdsByUser[userId][accountId];
+
+                const promise = FacebookAdAccountsDao.getAds(sdk, {
+                    adAccountId,
+                    adIds
+                });
+
+                requestPromises.push(promise);
+
+                // create data for calculate requests count
+                if(sdk.authData) {
+                    if(!dataForRequestsCountCalculation.hasOwnProperty(userId)) {
+                        dataForRequestsCountCalculation[userId] = 1;
+                    }else{
+                        dataForRequestsCountCalculation[userId] += 1;
+                    }
+                }
+            });
+        }
+
+        // Create requests count
+        await createApiCallsCount(dataForRequestsCountCalculation);
+
+        /**
+         * -------------------------
+         * | EXECUTE BULK REQUESTS |
+         * -------------------------
+         */
+        const finalResult = await Promise.all(requestPromises);
+        return console.log(JSON.stringify(finalResult[0] , null, 2));
+
+        /**
+         * -------------------
+         * | MODIFY RESPONSE |
+         * -------------------
+         */
+        const ads = [];
+        for(response of finalResult) {
+            if(response && response.responses){
+                ads.push(...response["responses"]);
+            }
+        }
+
+        if(!ads.length) {
+            return { status: "success", result: "success" };
+        }
+
+        const formattedAds = formatStatuses(ads);
+        const groupedByStatuses = _.groupBy(formattedAds, (ad) => {
+            return `${ad.status}-${ad.effectiveStatus}`;
+        });
+
+        const updatePromises = [];
+        for(uniqueKey in groupedByStatuses){
+            const updateAdIds = groupedByStatuses[uniqueKey].map(i => i.id);
+            const [status, effectiveStatus] = uniqueKey.split("-");
+
+            if(status && effectiveStatus) {
+                updatePromises.push(LocalAdsDao._update({status, effectiveStatus}, {remoteAdId: updateAdIds}));
+            }
+        }
+
+        if(!updatePromises.length) {
+            return
+        }
+
+        /**
+         * ---------------------------
+         * | SPLIT UPDATES TO CHUNKS |
+         * ---------------------------
+         */
+        const promiseChunks = _.chunk(updatePromises, 5);
+        for(const promiseChunk of promiseChunks) {
+            await Promise.all(promiseChunk);
+        }
+
+        return { status: "success", result: "success" };
+    } catch (error) {
+        console.log(error)
+        return { status: "failed", result: error.message || "unknown error" };
+    }
+}
+
+/**
  * Filter active ad
  * @param {{
  *  endDate: string | null | 0;
@@ -392,6 +534,6 @@ async function executeTest() {
 }
 
 module.exports = {
-    execute,
+    execute: execute2,
     getSdkParams,
 };

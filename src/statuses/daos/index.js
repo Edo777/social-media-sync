@@ -5,6 +5,7 @@ const LocalApiCallsDao = require("./local/api_calls");
 
 // Facebook
 const FacebookCampaignsDao = require("./remote/facebook/campaign");
+const FacebookAdAccountsDao = require("./remote/facebook/ad-account");
 
 // Google
 const GoogleAdsDao = require("./remote/google/ad");
@@ -18,6 +19,7 @@ module.exports = {
 
     // Facebook
     FacebookCampaignsDao,
+    FacebookAdAccountsDao,
 
     // Google
     GoogleAdsDao

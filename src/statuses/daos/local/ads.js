@@ -92,7 +92,30 @@ async function _update(data, condition) {
     return await _getMany(SocialAds, condition , options);
 }
 
+/**
+ * Get ads created in facebook and ready to get statuses
+ * @returns {[object]}
+ */
+ async function getFacebookAdsForStatusSync() {
+    return await _getMany(SocialAds, { 
+        isActive: true, 
+        provider: ["facebook", "instagram"],
+        remoteAdId:  { [ne] : null },
+        status: "active"
+    }, {
+        attributes: ["id", "remoteAdId", "remoteUserId", "effectiveStatus"],
+        include: {
+            model: SocialAdAccounts,
+            as : "adAccount",
+            where : { disableReason: "NONE" },
+            required: true,
+            attributes: ["adAccountId"]
+        }
+    });
+}
+
 module.exports = {
     _update,
-    getGoogleAdsForStatusSync
+    getGoogleAdsForStatusSync,
+    getFacebookAdsForStatusSync
 };
