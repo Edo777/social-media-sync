@@ -274,8 +274,8 @@ async function execute() {
          */
         const groupedAdsByUser = _.groupBy(filteredAds, "remoteUserId");
         Object.keys(groupedAdsByUser).forEach(userId => {
-            groupedAdsByUser[userId] = _.groupBy(groupedAdsByUser[userId], function(account){
-                return `${account.adAccountId}`;
+            groupedAdsByUser[userId] = _.groupBy(groupedAdsByUser[userId], function(ad){
+                return `${ad.adAccount.adAccountId}`;
             });
 
             Object.keys(groupedAdsByUser[userId]).forEach((accountId) => {
