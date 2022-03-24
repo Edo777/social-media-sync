@@ -283,9 +283,6 @@ async function execute() {
             })
         });
 
-        console.log(JSON.stringify(groupedAdsByUser, null, 2));
-        return { status: "success", result: "success" };
-
         /**
          * --------------------------
          * | GENERATE LOAD PROMISES |
@@ -330,7 +327,7 @@ async function execute() {
          * -------------------------
          */
         const finalResult = await Promise.all(requestPromises);
-        return console.log(JSON.stringify(finalResult[0] , null, 2));
+        return console.log(JSON.stringify(finalResult , null, 2));
 
         /**
          * -------------------
