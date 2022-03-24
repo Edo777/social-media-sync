@@ -534,6 +534,6 @@ async function executeTest() {
 }
 
 module.exports = {
-    execute: execute2,
+    execute,
     getSdkParams,
 };
