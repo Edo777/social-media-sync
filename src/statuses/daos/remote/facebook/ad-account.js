@@ -1,5 +1,5 @@
-const { AdAccount } = require("../../../../sdks/facebook");                                                                                                                                                  
-  
+const { AdAccount } = require("../../../../sdks/facebook");                                                                                                                                                                                                                                                                                                                                                           
+
 /**
  * Get ads of campaign
  * @param {any} sdk 
@@ -15,19 +15,17 @@ const { AdAccount } = require("../../../../sdks/facebook");
  */
 async function getAds(sdk, data) {
     try {
-        const adAccount = sdk.instance(AdAccount, { id: data.adAccountId });
+        const adAccount = sdk.instance(AdAccount, { id: data.adAccountId })
 
         let fields = data.adFields || ['id', 'status', 'effective_status'];
 
         let params = {
-            'ad_id': data.adIds
+            level: 'ad',
+            filtering: [{field: 'ad.id', operator: 'IN', value: data.adIds}]
         };
 
         return await adAccount.getAds(fields, params);
     } catch (error) {
-        console.log(error);
-        console.log("ERROR IN TIME LOAD ADS OF ACCOUNT ->" + data.adAccountId);
-        console.log("ERROR MESSAGE " , error.message);
         return [];
     }
 }
@@ -35,3 +33,5 @@ async function getAds(sdk, data) {
 module.exports = {
     getAds
 };
+
+

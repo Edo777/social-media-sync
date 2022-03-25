@@ -327,21 +327,15 @@ async function execute() {
          * -------------------------
          */
         const finalResult = await Promise.all(requestPromises);
-        console.log(JSON.stringify(finalResult[0].map(i => i._data), null, 2), "---------------------------");
-        // console.log(dataForRequestsCountCalculation, "---------------------------");
-
-        return { status: "success", result: "success" };
-
+        
         /**
          * -------------------
          * | MODIFY RESPONSE |
          * -------------------
          */
         const ads = [];
-        for(response of finalResult) {
-            if(response && response.responses){
-                ads.push(...response["responses"]);
-            }
+        for(const adsData of finalResult) {
+            ads.push(adsData.map(a => a._data));
         }
 
         if(!ads.length) {
@@ -353,6 +347,9 @@ async function execute() {
             return `${ad.status}-${ad.effectiveStatus}`;
         });
 
+        console.log(JSON.stringify(formattedAds, null, 2));
+        return { status: "success", result: "success" };
+        
         const updatePromises = [];
         for(uniqueKey in groupedByStatuses){
             const updateAdIds = groupedByStatuses[uniqueKey].map(i => i.id);
