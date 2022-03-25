@@ -1,5 +1,5 @@
-const { AdAccount } = require("../../../../sdks/facebook");
-
+const { AdAccount } = require("../../../../sdks/facebook");                                                                                                                                                  
+  
 /**
  * Get ads of campaign
  * @param {any} sdk 
@@ -17,13 +17,11 @@ async function getAds(sdk, data) {
     try {
         const adAccount = sdk.instance(AdAccount, { id: data.adAccountId });
 
-        let fields = data.adFields || [
-            'id',
-            'status',
-            'effective_status'
-        ];
+        let fields = data.adFields || ['id', 'status', 'effective_status'];
 
-        let params = { id : data.adIds[0] };
+        let params = {
+            'ad_id': data.adIds
+        };
 
         return await adAccount.getAds(fields, params);
     } catch (error) {

@@ -327,7 +327,10 @@ async function execute() {
          * -------------------------
          */
         const finalResult = await Promise.all(requestPromises);
-        return console.log(JSON.stringify(finalResult , null, 2));
+        console.log(finalResult[0].length, "---------------------------");
+        console.log(dataForRequestsCountCalculation, "---------------------------");
+
+        return { status: "success", result: "success" };
 
         /**
          * -------------------
