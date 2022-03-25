@@ -37,7 +37,7 @@ async function getSdkParams(userId, facebookUserId = null) {
  * When local and remote ad's statuses will be same, function doesn't return that ad
  * @param {[{id: number, status: string, effective_status: string}]} remoteAds 
  * @param {[{id: number, status: string, effectiveStatus: string, remoteAdId: string}]} localAds 
- * @returns {[{remoteId: number, status: string, effectiveStatus: string}]}
+ * @returns {[{id: string, remoteId: string, status: string, effectiveStatus: string}]}
  */
 function formatStatuses(remoteAds, localAds) {
     const formattedAds = [];
@@ -51,7 +51,7 @@ function formatStatuses(remoteAds, localAds) {
                 adFromRemote["status"]
             );
 
-            const result = { remoteId: adFromRemote.id, status, effectiveStatus };
+            const result = { id: adFromLocal.id, remoteId: adFromRemote.id, status, effectiveStatus };
 
             if(adFromLocal["effectiveStatus"] === effectiveStatus && adFromLocal["status"] === status) {
                 continue;
@@ -234,7 +234,7 @@ async function execute() {
             const [status, effectiveStatus] = uniqueKey.split("-");
 
             if(status && effectiveStatus) {
-                updatePromises.push(LocalAdsDao._update({status, effectiveStatus}, {remoteAdId: updateAdIds}));
+                updatePromises.push(LocalAdsDao._update({status, effectiveStatus}, {id: updateAdIds}));
             }
         }
 
