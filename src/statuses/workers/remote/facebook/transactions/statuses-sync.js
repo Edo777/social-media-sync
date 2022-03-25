@@ -34,21 +34,30 @@ async function getSdkParams(userId, facebookUserId = null) {
 
 /**
  * Detect statuses
- * @param {[{id: number, status: string, effective_status: string}]} ads 
- * @returns {[{id: number, status: string, effectiveStatus: string}]}
+ * When local and remote ad's statuses will be same, function doesn't return that ad
+ * @param {[{id: number, status: string, effective_status: string}]} remoteAds 
+ * @param {[{id: number, status: string, effectiveStatus: string, remoteAdId: string}]} localAds 
+ * @returns {[{remoteId: number, status: string, effectiveStatus: string}]}
  */
-function formatStatuses(ads) {
+function formatStatuses(remoteAds, localAds) {
     const formattedAds = [];
-    for (let i = 0; i < ads.length; i++) {
-        const adFromRemote = JSON.parse(JSON.stringify(ads[i]));
+    for (let i = 0; i < remoteAds.length; i++) {
+        const adFromRemote = JSON.parse(JSON.stringify(remoteAds[i]));
+        const adFromLocal = localAds.find(ad => ad.remoteAdId.toString() === adFromRemote.id);
 
-        if (adFromRemote && adFromRemote["effective_status"] && adFromRemote["status"]) {
+        if (adFromLocal && adFromRemote && adFromRemote["effective_status"] && adFromRemote["status"]) {
             const { status, effectiveStatus } = EffectiveStatusDetector.detectFacebook(
                 adFromRemote["effective_status"],
                 adFromRemote["status"]
             );
 
-            formattedAds.push({ id: adFromRemote.id, status, effectiveStatus });
+            const result = { remoteId: adFromRemote.id, status, effectiveStatus };
+
+            if(adFromLocal["effectiveStatus"] === effectiveStatus && adFromLocal["status"] === status) {
+                continue;
+            }
+
+            formattedAds.push(result);
         }
     }
 
@@ -256,7 +265,7 @@ async function execute() {
  * @param {any} remoteUserId
  * @returns {{status :string, result: any}}
  */
- async function execute2() {
+ async function executeOptimized() {
     try {
         const backendAds = await LocalAdsDao.getFacebookAdsForStatusSync();
 
@@ -342,21 +351,22 @@ async function execute() {
             return { status: "success", result: "success" };
         }
 
-        const formattedAds = formatStatuses(ads);
+        // Format statuses and filter ads which status will be updated in db
+        const formattedAds = formatStatuses(ads, filteredAds);
+        
+        // Group ads by status-effectiveStatus pair
         const groupedByStatuses = _.groupBy(formattedAds, (ad) => {
             return `${ad.status}-${ad.effectiveStatus}`;
         });
-
-        console.log(JSON.stringify(formattedAds, null, 2));
-        return { status: "success", result: "success" };
         
+        // Generate update promises that will update ads in our db
         const updatePromises = [];
         for(uniqueKey in groupedByStatuses){
-            const updateAdIds = groupedByStatuses[uniqueKey].map(i => i.id);
+            const updateAdRemoteIds = groupedByStatuses[uniqueKey].map(i => i.remoteId);
             const [status, effectiveStatus] = uniqueKey.split("-");
 
             if(status && effectiveStatus) {
-                updatePromises.push(LocalAdsDao._update({status, effectiveStatus}, {remoteAdId: updateAdIds}));
+                updatePromises.push(LocalAdsDao._update({status, effectiveStatus}, {remoteAdId: updateAdRemoteIds}));
             }
         }
 
@@ -534,6 +544,6 @@ async function executeTest() {
 }
 
 module.exports = {
-    execute: execute2,
+    execute: executeOptimized,
     getSdkParams,
 };

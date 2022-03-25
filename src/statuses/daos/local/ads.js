@@ -103,7 +103,7 @@ async function _update(data, condition) {
         remoteAdId:  { [ne] : null },
         status: "active"
     }, {
-        attributes: ["id", "remoteAdId", "remoteUserId", "effectiveStatus"],
+        attributes: ["id", "remoteAdId", "remoteUserId", "effectiveStatus", "status"],
         include: {
             model: SocialAdAccounts,
             as : "adAccount",
