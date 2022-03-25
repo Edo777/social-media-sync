@@ -327,8 +327,8 @@ async function execute() {
          * -------------------------
          */
         const finalResult = await Promise.all(requestPromises);
-        console.log(finalResult[0].length, "---------------------------");
-        console.log(dataForRequestsCountCalculation, "---------------------------");
+        console.log(JSON.stringify(finalResult[0].map(i => i._data), null, 2), "---------------------------");
+        // console.log(dataForRequestsCountCalculation, "---------------------------");
 
         return { status: "success", result: "success" };
 
