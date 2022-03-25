@@ -335,7 +335,7 @@ async function execute() {
          */
         const ads = [];
         for(const adsData of finalResult) {
-            ads.push(adsData.map(a => a._data));
+            ads.push(...adsData.map(a => a._data));
         }
 
         if(!ads.length) {
