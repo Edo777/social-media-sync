@@ -371,7 +371,7 @@ async function execute() {
         }
 
         if(!updatePromises.length) {
-            return
+            return { status: "success", result: "success" };
         }
 
         /**
