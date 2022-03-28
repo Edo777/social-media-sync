@@ -63,6 +63,10 @@ const {
     const condition = { [`${platform}UserId`]: userId, [`${platform}IsLogged`]: true};
     const options = { attributes: ["id", `${platform}AccessToken`] };
 
+    if(platform === "google") {
+        options.attributes.push("googleRefreshToken");
+    }
+
     if(attributes && attributes.length) {
         options.attributes = Array.from(new Set([...options.attributes, ...attributes]));
     }
