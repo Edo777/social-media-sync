@@ -170,6 +170,7 @@ async function getSdkInstance(provider, userId = null) {
             authData = tokensData.result;
         }
     }
+    console.log(authData)
 
     let sdkInstance = null;
     switch (provider) {
