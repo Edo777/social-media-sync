@@ -27,9 +27,13 @@ async function getSdkParams(userId, facebookUserId = null) {
  * @returns {{ sdk: any, remoteUserId: string }}
  */
  async function getSdkParamsByRemoteUser(id) {
-    const sdk = await getSdkByRemoteUser("facebook", id);
+    try {
+        const sdk = await getSdkByRemoteUser("facebook", id);
 
-    return sdk;
+        return sdk;
+    } catch (error) {
+        return null;
+    }
 }
 
 /**

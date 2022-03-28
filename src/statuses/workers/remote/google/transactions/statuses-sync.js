@@ -33,7 +33,7 @@ async function getSdkParams(returnSdkFor = null) {
 
         if(returnSdkFor) {
             if(returnSdkFor.remoteUserId){
-                sdk = await getSdkByRemoteUser("google", returnSdkFor.remoteUserId);
+                sdk = await getSdkByRemoteUser("google", returnSdkFor.remoteUserId, ["googleRefreshToken"]);
             }else if(returnSdkFor.userId) {
                 sdk = await getSdkByPlatform("google", returnSdkFor.userId);
             }
