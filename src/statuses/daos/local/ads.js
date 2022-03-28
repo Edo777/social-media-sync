@@ -85,7 +85,9 @@ async function _update(data, condition) {
             "googleAdgroupId", 
             "loginCustomerId", 
             "clientCustomerId",
-            "remoteUserId"
+            "remoteUserId",
+            "status",
+            "effectiveStatus"
         ]
     };
 
