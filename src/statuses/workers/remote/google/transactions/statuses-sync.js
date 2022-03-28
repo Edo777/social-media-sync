@@ -253,7 +253,7 @@ async function execute() {
             
             // sdk for job
             const sdk = await getSdkParams({clientCustomerId, loginCustomerId, remoteUserId});
-
+            console.log(sdk.loginClientCustomerId, "---------------------", sdk.clientCustomerId);
             if(!sdk || !sdk.loginClientCustomerId || !sdk.clientCustomerId) {
                 continue;
             }
