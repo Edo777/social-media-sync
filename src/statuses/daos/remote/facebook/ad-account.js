@@ -21,7 +21,8 @@ async function getAds(sdk, data) {
 
         let params = {
             level: 'ad',
-            filtering: [{field: 'ad.id', operator: 'IN', value: data.adIds}]
+            filtering: [{field: 'ad.id', operator: 'IN', value: data.adIds}],
+            limit: data.adIds.length
         };
 
         return await adAccount.getAds(fields, params);
