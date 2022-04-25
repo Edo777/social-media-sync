@@ -1,5 +1,4 @@
 const cryptography = require("./cryptography");
-const EMAIL = require("./send-email");
 const uploadStorage = require("./upload");
 const password = require("./password");
 const asyncMiddleware = require("./async-middleware");
@@ -22,7 +21,6 @@ module.exports = {
     dateRange,
     password,
     zerofill,
-    EMAIL,
     newError,
     hash,
     routesValidation,

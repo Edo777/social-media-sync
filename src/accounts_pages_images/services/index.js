@@ -1,7 +1,5 @@
-const AdAccountWebhookController = require("./ad-accounts");
-const UserWebhookController = require("./users");
+const Test = require("./test");
 
 module.exports = {
-    AdAccountWebhookController,
-    UserWebhookController
+    Test
 }
