@@ -1,0 +1,29 @@
+[
+    {
+        "name": "Trial 1",
+        "price": 9,
+        "ad_requests_count": 10000,
+        "ad_formats_count": 3,
+        "discount": 0,
+        "trial_days": 30,
+        "is_initial": false
+    },
+    {
+        "name": "Trial 2",
+        "price": 99,
+        "ad_requests_count": 100000,
+        "ad_formats_count": 4,
+        "discount": 0,
+        "trial_days": 30,
+        "is_initial": false
+    },
+    {
+        "name": "Trial 3",
+        "price": 199,
+        "ad_requests_count": 1000000,
+        "ad_formats_count": 100,
+        "discount": 0,
+        "trial_days": 30,
+        "is_initial": false
+    }
+]

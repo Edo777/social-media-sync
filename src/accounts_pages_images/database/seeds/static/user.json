@@ -1,0 +1,13 @@
+[
+    {
+        "first_name": "Admin",
+        "last_name": "Admin",
+        "timezone": "Asia/Yerevan",
+        "is_active": 1,
+        "password": "Admin0000",
+        "phone": "",
+        "refresh_token": "ebbf8672002bc2bc2d74977c59a98c2b1f19ff6a67e89fb8d94174ed0ea11115",
+        "email": "admin@admin.com",
+        "account_type": "admin"
+    }
+]

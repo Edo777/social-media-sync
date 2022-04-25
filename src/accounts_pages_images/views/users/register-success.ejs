@@ -1,0 +1,18 @@
+<%
+var labelColor = "#863AE0";
+var labelText = __t("email:label:welcome");
+var title = __t("email:title:register");
+%>
+<% include ../../../../shared/views/email-layout-header.ejs -%>
+
+<div style="font-size: 15px; padding-bottom: 10px;">
+    <%= __t("email:hi-message", { name: name }) %>!
+</div>
+
+<div style="font-size: 15px; padding-bottom: 10px;">
+    Thank you for choosing AdRoot Ad Manager, We are very happy to have you on board :)
+</div>
+
+<a href="https://app.adroot.io/auth/login">Click Here to log in</a>
+
+<% include ../../../../shared/views/email-layout-footer.ejs -%>

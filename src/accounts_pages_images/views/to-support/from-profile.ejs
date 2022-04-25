@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+
+</head>
+<body>
+    <div style="width: 800px; margin: 0 auto; padding: 25px 0;">
+        <table border="1" width="300" height="100">
+            <tr>
+                <td>User ID</td>
+                <td>Full name</td>
+                <td>E-mail</td>
+            </tr>
+            <tr>
+                <td><%= userId %></td>
+                <td><%= userName %></td>
+                <td><%= userEmail %></td>
+            </tr>
+        </table>
+
+        <hr style="margin-bottom: 25px; margin-top: 15px;" />
+
+        <%= message %>
+
+        <hr style="margin-bottom: 25px; margin-top: 15px;" />
+
+        <a href="mailto:<%= userEmail %>">Replay to email</a>
+    </div>
+</body>
+</html>

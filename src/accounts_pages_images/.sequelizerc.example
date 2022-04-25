@@ -1,0 +1,12 @@
+#!/usr/bin/env node
+const path = require("path");
+
+const rootShared = path.join(__dirname, "shared", "database");
+const rootModule = path.join(__dirname, "database");
+
+module.exports = {
+    "models-path":      path.join(rootModule, "models"),
+    "seeders-path":     path.join(rootModule, "seeds"),
+    "migrations-path":  path.join(rootModule, "migrations"),
+    "config":           path.join(rootShared, "modules-based", "configs-{{module_name}}.js"),
+};

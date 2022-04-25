@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+
+const path = require("path");
+const fs = require("fs");
+
+const appInit = require("../app");
+const register = require("../shared/jobs");
+
+const moduleName = path.dirname(path.join(__dirname, "..", ".env.example")).split(path.sep).pop();
+
+(function () {
+    const jobsPath = path.join(__dirname, "..", "jobs");
+    if (!fs.existsSync(jobsPath)) {
+        return console.error(`Module "${moduleName}" does not hav jobs part.`);
+    }
+
+    appInit(function () {
+        register(moduleName);
+    });
+})();

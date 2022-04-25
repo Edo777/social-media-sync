@@ -1,0 +1,30 @@
+[
+    {
+        "name": "admin",
+        "permissions": [
+            "create",
+            "update",
+            "delete",
+            "read"
+        ]
+    },
+    {
+        "name": "tester",
+        "permissions": [
+            "create_campaign",
+            "create_ad",
+            "update_campaign",
+            "update_ad",
+            "read_campaign",
+            "read_ad"
+        ]
+    },
+    {
+        "name": "viewer",
+        "permissions": [
+            "read_campaign",
+            "read_ad",
+            "read_reporting"
+        ]
+    }
+]

@@ -1,0 +1,33 @@
+{
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "prettier",
+    "plugin:prettier/recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2018
+  },
+  "rules": {
+    "prettier/prettier": "warn",
+    "no-extra-boolean-cast": "off",
+    "no-console": "off",
+    "no-useless-escape": "off",
+    "no-unused-vars": "off",
+    "eqeqeq": "off",
+    "interface-name": "off",
+    "no-fallthrough": "off",
+    "array-callback-return": "off",
+    "semi": "error",
+    "curly": "error",
+    "no-prototype-builtins": "off",
+    "no-empty": "warn",
+    "prefer-const": "error",
+    "no-case-declarations": "off",
+    "camelcase": "error",
+    "no-async-promise-executor": "warn"
+  }
+}

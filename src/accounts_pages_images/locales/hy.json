@@ -1,0 +1,10 @@
+{
+    "email:all-rights-reserved": "All Rights Reserved.",
+    "email:hi-message": "Hi name",
+    "email:label:security": "Security",
+    "email:label:welcome": "Welcome",
+
+    "email:title:register": "Welcome to AdRoot Ad Manager",
+    "email:title:password-recovery": "AdRoot - Password Recovery",
+    "email:title:register-success": "Successfully Registered"
+}

@@ -4,13 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "update:google:sdk": "npm update @smmads/google-sdk"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@smmads/google-sdk": "^1.0.15",
+    "@smmads/google-sdk": "^1.0.20",
     "crypto-js": "^4.1.1",
     "facebook-nodejs-business-sdk": "^12.0.1",
     "googleapis": "^92.0.0"
