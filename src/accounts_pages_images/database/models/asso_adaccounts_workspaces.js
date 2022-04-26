@@ -41,53 +41,8 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
                 defaultValue: false,
             },
-        },
-        {
-            hooks: {
-                beforeCreate: function (instance) {
-                    instance.uniqueKey = `${instance.workspaceId}-${instance.adAccountId}`;
-                },
-                beforeBulkCreate: function (instances) {
-                    instances.forEach(function (instance) {
-                        instance.uniqueKey = `${instance.workspaceId}-${instance.adAccountId}`;
-                    });
-                },
-            },
         }
     );
 
-    SocialAssoAdaccountsWorkspaces.associate = function (models) {
-        // Workspace belongs to users
-        SocialAssoAdaccountsWorkspaces.belongsTo(models["SocialAdAccounts"], {
-            onDelete: "CASCADE",
-            onUpdate: "CASCADE",
-            foreignKey: "adAccountId",
-            as: "workspaceAdAccount",
-        });
-
-        // Workspace belongs to users
-        SocialAssoAdaccountsWorkspaces.belongsTo(models["SocialWorkspaces"], {
-            onDelete: "CASCADE",
-            onUpdate: "CASCADE",
-            foreignKey: "workspaceId",
-            as: "adAccountWorkspace",
-        });
-
-        // AdAccount belongs to users
-        SocialAssoAdaccountsWorkspaces.belongsTo(models["AppUsers"], {
-            onDelete: "CASCADE",
-            onUpdate: "CASCADE",
-            foreignKey: "adAccountOwnerId",
-            as: "adAccountOwner",
-        });
-
-        // Workspace belongs to users
-        SocialAssoAdaccountsWorkspaces.belongsTo(models["AppUsers"], {
-            onDelete: "CASCADE",
-            onUpdate: "CASCADE",
-            foreignKey: "workspaceOwnerId",
-            as: "workspaceOwner",
-        });
-    };
     return SocialAssoAdaccountsWorkspaces;
 };

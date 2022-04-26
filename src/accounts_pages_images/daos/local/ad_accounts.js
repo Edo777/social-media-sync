@@ -68,18 +68,33 @@ async function _getMany(model, condition, options) {
  * @returns {Promise<array>}
  */
 async function loadAccountsNeededImagesLoad(platform) {
-    return await _getMany(SocialAdAccounts, {
+    let adAccounts = await _getMany(SocialAdAccounts, {
         platform: platform,
         adAccountIcon: "not-loaded",
         userVisible: true,
     }, {
-        include: {
-            model : SocialAssoAdaccountsWorkspaces,
-            attribute: [],
-            required: true
-        },
         attribute: ["id", "adAccountOwnerId", "adAccountIcon", "platformUserId", "adAccountId"],
     });
+
+    if(adAccounts.length){
+        const ids = adAccounts.map(a => a.id);
+        
+        const associations = await _getMany(
+            SocialAssoAdaccountsWorkspaces, 
+            { adAccountId: ids }, 
+            { attributes: ["id", "adAccountId"] }
+        );
+
+        if(!associations.length){
+            adAccounts = [];
+        }else{
+            const neededIds = associations.map(a => a.adAccountId);
+
+            adAccounts = adAccounts.filter(acc => neededIds.includes(acc.id));
+        }
+    }
+
+    return adAccounts;
 }
 
 /**
