@@ -6,19 +6,51 @@ const REMOTE_DAOS = {
 }
 
 /**
- * Load images and set to database
- * @param {"facebook" | "google"} platform
+ * Limit accounts
+ * @param {[object]} accounts 
+ * @param {number} limit 
  * @returns 
  */
-async function loadAccountsImages(platform) {
+function limitAccounts(accounts, limit) {
+    const list = {};
+
+    for(let i = 0; i< accounts.length; i++) {
+        const tokenUserId = accounts[i].platformUserId;
+
+        if(!list.hasOwnProperty(tokenUserId)) {
+            list[tokenUserId] = 0;
+        }
+
+        if(list[tokenUserId] >= limit) {
+            accounts[i] = null;
+        } else {
+            list[tokenUserId]++;
+        }
+    }
+
+    return accounts.filter(acc => acc !== null);
+}
+
+/**
+ * Load images and set to database
+ * @param {"facebook" | "google"} platform
+ * @param {number} limitForToken
+ * @returns 
+ */
+async function loadAccountsImages(platform, limitForToken=null) {
     if(!REMOTE_DAOS.hasOwnProperty(platform)) {
         return
     }
 
-    const adAccounts = await AdAccountsDao.loadAccountsNeededImagesLoad(platform);
+    let adAccounts = await AdAccountsDao.loadAccountsNeededImagesLoad(platform);
 
     if(!adAccounts || !adAccounts.length) {
         return;
+    }
+
+    // Integrate limit for per user
+    if(limitForToken) {
+        adAccounts = limitAccounts(adAccounts, limitForToken);
     }
     
     await REMOTE_DAOS[platform].setAdAccountsPictures(adAccounts);
@@ -29,9 +61,10 @@ async function loadAccountsImages(platform) {
  * load images
  * @param {"facebook" | "google"} platform
  * @param {number} CRON_CODE
+ * @param {number} limitForPerToken
  * @returns
  */
-async function loadImages(platform, CRON_CODE) {
+async function loadImages(platform, CRON_CODE, limitForPerToken=null) {
     if(!["facebook", "google"].includes(platform)) {
         return
     }
@@ -46,7 +79,7 @@ async function loadImages(platform, CRON_CODE) {
     await updateJob(CRON_CODE, false);
     
     // Load images and set to database
-    await loadAccountsImages(platform);
+    await loadAccountsImages(platform, limitForPerToken);
     
     // end cronjob
     await updateJob(CRON_CODE, true);

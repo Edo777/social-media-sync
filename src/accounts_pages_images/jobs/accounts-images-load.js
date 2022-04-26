@@ -6,7 +6,7 @@ const { getCode } = require("./PROCESS_CODES");
  */
 async function facebookAccountsImagesLoad() {
     const facebookCronCode = getCode("FB_ACCOUNTS_IMAGES_LOAD");
-    LocalCronJobs.loadImages("facebook", facebookCronCode).then();
+    LocalCronJobs.loadImages("facebook", facebookCronCode, 10).then();
 }
 
 module.exports = function (schedule) {
