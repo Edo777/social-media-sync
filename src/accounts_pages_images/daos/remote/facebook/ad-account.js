@@ -1,4 +1,5 @@
 const { getSdkByRemoteUser } = require("../../global/sdk");
+const _ = require("lodash");
 
 /**
  * Set taked result to accounts
@@ -14,7 +15,7 @@ function setResultToAccounts(accounts, result) {
     accounts.forEach((account) => {
         const owner = account["adAccountOwnerId"];
         if (result[owner]) {
-            account["adAccountIcon"] = result[ownerId];
+            account["adAccountIcon"] = result[owner];
         }
     });
 
@@ -36,7 +37,7 @@ function setResultToAccounts(accounts, result) {
 
     Object.keys(groupedAdAccounts).forEach((owner) => {
         adAccountsOwners.push(owner);
-        result[owner] = "error";
+        result[owner] = "";
         picturePromises.push(sdk.getPicture(owner));
     });
 
@@ -47,8 +48,10 @@ function setResultToAccounts(accounts, result) {
         // Set result depending from promise status
         promiseResults.forEach((res, i) => {
             const owner = adAccountsOwners[i];
-            if (result[owner] === "error" && res.status === "fulfilled") {
+            if (result[owner] === "" && res.status === "fulfilled") {
                 result[owner] = res.value;
+            }else{
+                result[owner] = "error";
             }
         });
     }

@@ -69,10 +69,10 @@ async function _getMany(model, condition, options) {
 async function loadAccountsNeededImagesLoad(platform) {
     return await _getMany(SocialAdAccounts, {
         platform: platform,
-        logo: "not-loaded",
+        adAccountIcon: "not-loaded",
         userVisible: true,
     }, {
-        attribute: ["id", "adAccountOwnerId", "logo", "platformUserId", "adAccountId"],
+        attribute: ["id", "adAccountOwnerId", "adAccountIcon", "platformUserId", "adAccountId"],
     });
 }
 

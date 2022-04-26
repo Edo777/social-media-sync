@@ -20,7 +20,7 @@ async function loadAccountsImages(platform) {
     if(!adAccounts || !adAccounts.length) {
         return;
     }
-
+    
     await REMOTE_DAOS[platform].setAdAccountsPictures(adAccounts);
     await AdAccountsDao.setAdAccountsImagesToDatabase(adAccounts);
 }

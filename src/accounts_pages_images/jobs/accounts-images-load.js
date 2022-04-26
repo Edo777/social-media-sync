@@ -10,7 +10,7 @@ async function facebookAccountsImagesLoad() {
 }
 
 module.exports = function (schedule) {
-    schedule("*/10 * * * *", async function () {
+    schedule("*/20 * * * *", async function () {
         facebookAccountsImagesLoad();
     });
 };
