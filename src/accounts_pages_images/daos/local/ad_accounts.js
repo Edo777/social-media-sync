@@ -1,6 +1,6 @@
 "use strict";
 
-const { SocialAdAccounts, Sequelize} = require("../../shared/database/models");
+const { SocialAdAccounts, SocialAssoAdaccountsWorkspaces, Sequelize} = require("../../shared/database/models");
 const _ = require("lodash");
 
 /**
@@ -63,6 +63,7 @@ async function _getMany(model, condition, options) {
 
 /**
  * Load ad accounts which have need to load images
+ * !!! Only accounts whcih connected some workspace
  * @param { "facebook" | "google" } platform 
  * @returns {Promise<array>}
  */
@@ -72,6 +73,11 @@ async function loadAccountsNeededImagesLoad(platform) {
         adAccountIcon: "not-loaded",
         userVisible: true,
     }, {
+        include: {
+            model : SocialAssoAdaccountsWorkspaces,
+            attribute: [],
+            required: true
+        },
         attribute: ["id", "adAccountOwnerId", "adAccountIcon", "platformUserId", "adAccountId"],
     });
 }
