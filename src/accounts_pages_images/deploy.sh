@@ -15,8 +15,6 @@ if [[ "dev" != $ENVIRONMENT_MODE && "dev2" != $ENVIRONMENT_MODE && "prod" != $EN
   exit
 fi
 
-if()
-
 cd ./$(dirname "$0")
 
 # Install node modules
