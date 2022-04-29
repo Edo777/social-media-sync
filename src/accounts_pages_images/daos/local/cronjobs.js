@@ -80,8 +80,10 @@ async function loadAccountsImages(platform, limitForToken=null) {
             adAccounts = limitAccounts(adAccounts, limitForToken);
         }
         
-        await REMOTE_DAOS[platform].getAdAcccountsInformation(adAccounts);
-        await AdAccountsDao.setAdAccountsInformationToDatabase(adAccounts);
+        const resolvedAccounts = await REMOTE_DAOS[platform].getAdAcccountsInformation(adAccounts);
+        if(resolvedAccounts && resolvedAccounts.length) {
+            await AdAccountsDao.setAdAccountsInformationToDatabase(resolvedAccounts);
+        }
     } catch (error) {
         console.log(error, "-----------------------------")
     }

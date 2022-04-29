@@ -59,7 +59,7 @@ const {
         findOptions.include = options.include;
     }
 
-    return await model.findOne(findOptions);
+    return await model.findAll(findOptions);
 }
 
 /**

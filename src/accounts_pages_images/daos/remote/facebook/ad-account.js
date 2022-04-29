@@ -1,6 +1,7 @@
 const { getSdkByRemoteUser, getSdkByNeededData, getAccessTokensByCondition } = require("../../global/sdk");
 const { User, AdAccount } = require("../../../../sdks/facebook");
 const _ = require("lodash");
+const { filter } = require("../../../jobs");
 
 function convertAccountStatus(code) {
     const statuses = {
@@ -200,7 +201,12 @@ async function compareRemoteAndLocalAdAccounts(remoteAdAccounts, localAdAccounts
             continue;
         }
 
-        const neededCurrentUserAccounts = groupedLocalAccounts[platformUserId];
+        const neededCurrentUserAccounts = groupedLocalAccounts[platformUserId].filter(acc => acc !== null);
+
+        if(!neededCurrentUserAccounts.length) {
+            continue;
+        }
+
         const neededAccountIndex = neededCurrentUserAccounts.findIndex(acc => acc.adAccountId === remoteId);
 
         if(neededAccountIndex < 0) {
@@ -222,10 +228,12 @@ async function compareRemoteAndLocalAdAccounts(remoteAdAccounts, localAdAccounts
 }
 
 /**
- * 
- * @param {*} adAccounts
+ * Get info from remote server and set to update in our db
+ * @param {[object]} adAccounts
+ * @returns {[object]} accounts to update
  */
 async function getAdAcccountsInformation(adAccounts) {
+    // Get tokens
     const tokensList = await getAccessTokensByCondition({
         condition: {
             facebookIsLogged: true,
@@ -266,19 +274,22 @@ async function getAdAcccountsInformation(adAccounts) {
 
     const accountsLoadPromises = [];
     Object.keys(sdks).forEach(remoteUserId => {
-        accountsLoadPromises.push(loadAdAccounts(sdks[remoteUserId]));
+        accountsLoadPromises.push(loadAdAccounts(sdks[remoteUserId].sdk));
     });
 
     let resultOfAdccounts = await Promise.allSettled(accountsLoadPromises);
-    resultOfAdccounts = resultOfAdccounts
-        .filter(res => res.status === "fulfilled")
-        .map(res => res.value);
+    resultOfAdccounts = resultOfAdccounts.filter(res => res.status === "fulfilled")
 
     if(!resultOfAdccounts.length) {
         return [];
     }
 
-    return await compareRemoteAndLocalAdAccounts(resultOfAdccounts, adAccounts);
+    const successResult = [];
+    resultOfAdccounts.forEach(resArray => {
+        successResult.push(...resArray.value);
+    })
+
+    return await compareRemoteAndLocalAdAccounts(successResult, adAccounts);
 }
 
 module.exports = {

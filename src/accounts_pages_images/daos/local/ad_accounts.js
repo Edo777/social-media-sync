@@ -122,7 +122,7 @@ async function loadAccountsNeededImagesLoad(platform, filterAssociated=true) {
         platform: platform,
         userVisible: true,
     }, {
-        attribute: ["id", "adAccountOwnerId", "adAccountIcon", "platformUserId", "adAccountId"],
+        attribute: ["id", "userId", "adAccountOwnerId", "adAccountIcon", "platformUserId", "adAccountId"],
     });
 
     if(filterAssociated && adAccounts.length){
