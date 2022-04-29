@@ -1,7 +1,6 @@
 const { getSdkByRemoteUser, getSdkByNeededData, getAccessTokensByCondition } = require("../../global/sdk");
 const { User, AdAccount } = require("../../../../sdks/facebook");
 const _ = require("lodash");
-const { filter } = require("../../../jobs");
 
 function convertAccountStatus(code) {
     const statuses = {
