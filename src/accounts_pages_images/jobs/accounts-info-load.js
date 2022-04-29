@@ -6,7 +6,7 @@ const { getCode } = require("./PROCESS_CODES");
  */
 async function facebookAccountsInfoLoad() {
     const facebookCronCode = getCode("FB_ACCOUNTS_INFO_LOAD");
-    LocalCronJobs.execute("load-accounts-info", "facebook", facebookCronCode, 10).then();
+    LocalCronJobs.execute("load-accounts-info", "facebook", facebookCronCode).then();
 }
 
 module.exports = function (schedule) {
