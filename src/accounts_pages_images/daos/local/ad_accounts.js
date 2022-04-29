@@ -62,26 +62,17 @@ async function _getMany(model, condition, options) {
 }
 
 /**
- * Load ad accounts which have need to load images
- * !!! Only accounts whcih connected some workspace
- * @param { "facebook" | "google" } platform 
- * @returns {Promise<array>}
+ * Filter and return only associated ad accounts
+ * @param {[{id: number, adAccountId: string}]} adAccounts 
+ * @returns 
  */
-async function loadAccountsNeededImagesLoad(platform) {
-    let adAccounts = await _getMany(SocialAdAccounts, {
-        platform: platform,
-        adAccountIcon: "not-loaded",
-        userVisible: true,
-    }, {
-        attribute: ["id", "adAccountOwnerId", "adAccountIcon", "platformUserId", "adAccountId"],
-    });
-
-    if(adAccounts.length){
+async function filterAssociatedAdAccounts(adAccounts) {
+    if(adAccounts && adAccounts.length){
         const ids = adAccounts.map(a => a.id);
         
         const associations = await _getMany(
             SocialAssoAdaccountsWorkspaces, 
-            { adAccountId: ids }, 
+            { adAccountId: ids },
             { attributes: ["id", "adAccountId"] }
         );
 
@@ -93,8 +84,78 @@ async function loadAccountsNeededImagesLoad(platform) {
             adAccounts = adAccounts.filter(acc => neededIds.includes(acc.id));
         }
     }
+   
+    return adAccounts;
+}
+
+/**
+ * Load ad accounts which have need to load images
+ * !!! Only accounts whcih connected some workspace
+ * @param { "facebook" | "google" } platform 
+ * @param {boolean} filterAssociated
+ * @returns {Promise<array>}
+ */
+async function loadAccountsNeededImagesLoad(platform, filterAssociated=true) {
+    let adAccounts = await _getMany(SocialAdAccounts, {
+        platform: platform,
+        adAccountIcon: "not-loaded",
+        userVisible: true,
+    }, {
+        attribute: ["id", "adAccountOwnerId", "adAccountIcon", "platformUserId", "adAccountId"],
+    });
+
+    if(filterAssociated && adAccounts.length){
+        adAccounts = await filterAssociatedAdAccounts(adAccounts);
+    }
 
     return adAccounts;
+}
+
+/**
+ * Load ad accounts which have need to load info
+ * !!! Only accounts whcih connected some workspace
+ * @param { "facebook" | "google" } platform 
+ * @returns {Promise<array>}
+ */
+ async function loadAccountsNeededInfoLoad(platform, filterAssociated) {
+    let adAccounts = await _getMany(SocialAdAccounts, {
+        platform: platform,
+        userVisible: true,
+    }, {
+        attribute: ["id", "adAccountOwnerId", "adAccountIcon", "platformUserId", "adAccountId"],
+    });
+
+    if(filterAssociated && adAccounts.length){
+        adAccounts = await filterAssociatedAdAccounts(adAccounts);
+    }
+
+    return adAccounts;
+}
+
+/**
+ * Execute promises with chunks
+ * @param {[Promise]} promises 
+ * @param {number} chunk 
+ * @param {boolean} returnResult 
+ * @returns 
+ */
+async function executePromisesWithChunks(promises, chunk, returnResult = false) {
+    const promiseChunks = _.chunk(promises, chunk);
+    const result = null;
+
+    for(const promiseChunk of promiseChunks) {
+        const promiseResult = await Promise.allSettled(promiseChunk);
+
+        if(returnResult) {
+            if(result === null) {
+                result = [];
+            }
+
+            result.push(...promiseResult);
+        }
+    }
+    
+    return result;
 }
 
 /**
@@ -119,11 +180,38 @@ async function setAdAccountsImagesToDatabase(adAccounts){
     
             promises.push(_update({ adAccountIcon }, { id: localIds }));
         });
+
+        await executePromisesWithChunks(promises, 5);
+    }
+
+    return { status: "success" };
+}
+
+/**
+ * 
+ * @param {[{
+ *  id: number, 
+ *  status: string,
+ *  disableReason: string
+ * }]} adAccounts 
+ */
+async function setAdAccountsInformationToDatabase(adAccounts) {
+    if(adAccounts && adAccounts.length) {
+        const groupedAdAccounts = _.groupBy(adAccounts, (it) => {
+            return `${it.status}-${it.disableReason}`;
+        });
+
+        const promises = [];
     
-        const promiseChunks = _.chunk(promises, 5);
-        for(const promiseChunk of promiseChunks) {
-            await Promise.allSettled(promiseChunk);
-        }
+        Object.keys(groupedAdAccounts).forEach((groupKey) => {
+            const { status, disableReason } = groupKey.split("-");
+
+            const localIds = groupedAdAccounts[groupKey].map(a => a.id);
+    
+            promises.push(_update({ status, disableReason }, { id: localIds }));
+        });
+    
+        await executePromisesWithChunks(promises, 5);
     }
 
     return { status: "success" };
@@ -131,5 +219,7 @@ async function setAdAccountsImagesToDatabase(adAccounts){
 
 module.exports = {
     loadAccountsNeededImagesLoad,
-    setAdAccountsImagesToDatabase
+    loadAccountsNeededInfoLoad,
+    setAdAccountsImagesToDatabase,
+    setAdAccountsInformationToDatabase
 };

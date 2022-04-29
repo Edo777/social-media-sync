@@ -1,5 +1,6 @@
 const list = {
    "FB_ACCOUNTS_IMAGES_LOAD" : 111,
+   "FB_ACCOUNTS_INFO_LOAD" : 112
 };
 
 /**

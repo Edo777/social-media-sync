@@ -14,7 +14,7 @@ const REMOTE_DAOS = {
 function limitAccounts(accounts, limit) {
     const list = {};
 
-    for(let i = 0; i< accounts.length; i++) {
+    for(let i = 0; i < accounts.length; i++) {
         const tokenUserId = accounts[i].platformUserId;
 
         if(!list.hasOwnProperty(tokenUserId)) {
@@ -58,13 +58,45 @@ async function loadAccountsImages(platform, limitForToken=null) {
 }
 
 /**
- * load images
+ * Load images and set to database
+ * @param {"facebook" | "google"} platform
+ * @param {number} limitForToken
+ * @returns 
+ */
+ async function loadAccountsInfo(platform, limitForToken=null) {
+    try {
+        if(!REMOTE_DAOS.hasOwnProperty(platform)) {
+            return
+        }
+    
+        let adAccounts = await AdAccountsDao.loadAccountsNeededInfoLoad(platform);
+    
+        if(!adAccounts || !adAccounts.length) {
+            return;
+        }
+    
+        // Integrate limit for per user
+        if(limitForToken) {
+            adAccounts = limitAccounts(adAccounts, limitForToken);
+        }
+        
+        await REMOTE_DAOS[platform].getAdAcccountsInformation(adAccounts);
+        await AdAccountsDao.setAdAccountsInformationToDatabase(adAccounts);
+    } catch (error) {
+        console.log(error, "-----------------------------")
+    }
+}
+
+
+/**
+ * High order function for cronjobs
+ * @param {Function} processCB 
  * @param {"facebook" | "google"} platform
  * @param {number} CRON_CODE
  * @param {number} limitForPerToken
- * @returns
+ * @returns 
  */
-async function loadImages(platform, CRON_CODE, limitForPerToken=null) {
+async function processCronjob(processCB, platform, CRON_CODE, limitForPerToken=null) {
     if(!["facebook", "google"].includes(platform)) {
         return
     }
@@ -79,10 +111,28 @@ async function loadImages(platform, CRON_CODE, limitForPerToken=null) {
     await updateJob(CRON_CODE, false);
     
     // Load images and set to database
-    await loadAccountsImages(platform, limitForPerToken);
+    await processCB(platform, limitForPerToken);
     
     // end cronjob
     await updateJob(CRON_CODE, true);
+}
+
+/**
+ * load images
+ * @param {"load-accounts-images" | "load-accounts-info"} task
+ * @param {"facebook" | "google"} platform
+ * @param {number} CRON_CODE
+ * @param {number} limitForPerToken
+ * @returns
+ */
+async function execute(task, platform, CRON_CODE, limitForPerToken=null) {
+    if(task === "load-accounts-images") {
+        await processCronjob(loadAccountsImages, platform, CRON_CODE, limitForPerToken);
+    }
+
+    if(task === "load-accounts-info") {
+       await processCronjob(loadAccountsInfo, platform, CRON_CODE, limitForPerToken)
+    }
 }
 
 /**
@@ -119,5 +169,5 @@ async function updateJob(JOB_CODE, finished) {
 module.exports = {
     canStartJob,
     updateJob,
-    loadImages
+    execute
 };

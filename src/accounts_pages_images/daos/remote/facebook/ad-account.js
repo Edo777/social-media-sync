@@ -1,5 +1,40 @@
-const { getSdkByRemoteUser } = require("../../global/sdk");
+const { getSdkByRemoteUser, getSdkByNeededData, getAccessTokensByCondition } = require("../../global/sdk");
+const { User, AdAccount } = require("../../../../sdks/facebook");
 const _ = require("lodash");
+
+function convertAccountStatus(code) {
+    const statuses = {
+        1: "ACTIVE",
+        2: "DISABLED",
+        3: "UNSETTLED",
+        7: "PENDING_RISK_REVIEW",
+        8: "PENDING_SETTLEMENT",
+        9: "IN_GRACE_PERIOD",
+        100: "PENDING_CLOSURE",
+        101: "CLOSED",
+        201: "ANY_ACTIVE",
+        202: "ANY_CLOSED",
+    };
+
+    return statuses[code];
+}
+
+function convertDisableReason(code) {
+    const reasons = {
+        0: "NONE",
+        1: "ADS_INTEGRITY_POLICY",
+        2: "ADS_IP_REVIEW",
+        3: "RISK_PAYMENT",
+        4: "GRAY_ACCOUNT_SHUT_DOWN",
+        5: "ADS_AFC_REVIEW",
+        6: "BUSINESS_INTEGRITY_RAR",
+        7: "PERMANENT_CLOSE",
+        8: "UNUSED_RESELLER_ACCOUNT",
+        9: "UNUSED_ACCOUNT",
+    };
+
+    return reasons[code];
+}
 
 /**
  * Set taked result to accounts
@@ -14,7 +49,7 @@ function setResultToAccounts(accounts, result) {
 
     accounts.forEach((account) => {
         const owner = account["adAccountOwnerId"];
-        if (result[owner]) {
+        if (result.hasOwnProperty(owner)) {
             account["adAccountIcon"] = result[owner];
         }
     });
@@ -28,7 +63,7 @@ function setResultToAccounts(accounts, result) {
  * @param {any} sdk
  * @returns {{ownerId: "logo" | "error"} | [{ id: string, ownerId, logo: string }]}
  */
- async function getAccountsPicturesBatch(adAccounts, sdk, setResultToAccountsCB = null) {
+async function getAccountsPicturesBatch(adAccounts, sdk, setResultToAccountsCB = null) {
     const groupedAdAccounts = _.groupBy(adAccounts, "adAccountOwnerId");
 
     const picturePromises = [];
@@ -68,7 +103,7 @@ function setResultToAccounts(accounts, result) {
  * @param {[{ id: string, remoteId: string, ownerId: string, platformUserId: string }]} adAccounts
  * @param {FacebookSDK} sdk
  */
- async function setAdAccountsPictures(adAccounts, sdk = null) {
+async function setAdAccountsPictures(adAccounts, sdk = null) {
     if (!adAccounts || !adAccounts.length) {
         return;
     }
@@ -94,8 +129,161 @@ function setResultToAccounts(accounts, result) {
     }
 }
 
+/**
+ * TODO: Get ad accounts facebook
+ * @param {FacebookSDK} sdk
+ * @param {{ set , limit }} pictureOptions
+ * @returns
+ */
+async function loadAdAccounts(sdk, pictureOptions = { set: false, limit: null }) {
+    try {
+        const user = sdk.instance(User, { id: sdk.authData.facebookUserId });
+
+        const response = await user.getAdAccounts([
+            AdAccount.Fields.id,
+            AdAccount.Fields.account_status,
+            AdAccount.Fields.disable_reason,
+        ]);
+
+        const adAccounts = response.map((item) => ({
+            platformUserId: sdk.authData.facebookUserId.toString(),
+            id: item._data.id,
+            status: convertAccountStatus(item._data.account_status),
+            disableReason: convertDisableReason(item._data.disable_reason),
+        }));
+
+        // Load pictures for specific limit
+        if (pictureOptions.set) {
+            let accountsToGetPictures = adAccounts;
+
+            if (pictureOptions.limit) {
+                accountsToGetPictures = adAccounts.slice(0, pictureOptions.limit);
+            }
+
+            await setAdAccountsPictures(accountsToGetPictures, sdk);
+        }
+
+        return adAccounts;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+/**
+ * Compare and return only accounts which have need to update
+ * @param {[{
+ *  platformUserId: string,
+ *  status: string,
+ *  disableReason: string,
+ *  id: string
+ * }]} remoteAdAccounts 
+ * @param {[{
+ *  id: number,
+ *  adAccountId: string,
+ *  status: string,
+ *  disableReason: string,
+ *  platformUserId: string
+ * }]} localAdAccounts 
+ * @returns 
+ */
+async function compareRemoteAndLocalAdAccounts(remoteAdAccounts, localAdAccounts) {
+    if(!remoteAdAccounts.length || !localAdAccounts.length) {
+        return [];
+    }
+
+    const result = [];
+    const groupedLocalAccounts = _.groupBy(localAdAccounts, "platformUserId");
+    for(let i = 0; i < remoteAdAccounts.length; i++) {
+        const { platformUserId, status, disableReason, id: remoteId} = remoteAdAccounts[i];
+        if(!groupedLocalAccounts.hasOwnProperty(platformUserId)) {
+            continue;
+        }
+
+        const neededCurrentUserAccounts = groupedLocalAccounts[platformUserId];
+        const neededAccountIndex = neededCurrentUserAccounts.findIndex(acc => acc.adAccountId === remoteId);
+
+        if(neededAccountIndex < 0) {
+            continue;
+        }
+
+        const neededLocalAccount = neededCurrentUserAccounts[neededAccountIndex];
+
+        if(neededLocalAccount && neededLocalAccount.status !== status) {
+            neededLocalAccount.status = status;
+            neededLocalAccount.disableReason = disableReason;
+            result.push(neededLocalAccount);
+
+            groupedLocalAccounts[platformUserId][neededAccountIndex] = null;
+        }
+    }
+
+    return result;
+}
+
+/**
+ * 
+ * @param {*} adAccounts
+ */
+async function getAdAcccountsInformation(adAccounts) {
+    const tokensList = await getAccessTokensByCondition({
+        condition: {
+            facebookIsLogged: true,
+            userId: adAccounts.map(a => a.userId),
+        },
+        attributes: ["facebookUserId", "facebookAccessToken"]
+    });
+
+    if(!tokensList || !tokensList.length) {
+        return
+    }
+
+    // Group tokens by remote user
+    const tokensGroupedByRemoteUser = _.groupBy(tokensList, "facebookUserId");
+    const sdks = {}
+
+    // Filter accounts which accesstoken is exists
+    for(let i = 0; i < adAccounts.length; i++) {
+        const rUserId = adAccounts[i].platformUserId;
+        if(tokensGroupedByRemoteUser.hasOwnProperty(rUserId)) {
+
+            // set user
+            if(!sdks.hasOwnProperty(rUserId)) {
+                sdks[rUserId] = {};
+            }
+
+            // Get sdk for user
+            if(!sdks[rUserId].sdk) {
+                const token = tokensGroupedByRemoteUser[rUserId][0].facebookAccessToken;
+                sdks[rUserId].sdk = await getSdkByNeededData("facebook", { accessToken: token });
+
+                if(sdks[rUserId].sdk) {
+                    sdks[rUserId].sdk.authData = { facebookUserId: rUserId }
+                }
+            }
+        }
+    }
+
+    const accountsLoadPromises = [];
+    Object.keys(sdks).forEach(remoteUserId => {
+        accountsLoadPromises.push(loadAdAccounts(sdks[remoteUserId]));
+    });
+
+    let resultOfAdccounts = await Promise.allSettled(accountsLoadPromises);
+    resultOfAdccounts = resultOfAdccounts
+        .filter(res => res.status === "fulfilled")
+        .map(res => res.value);
+
+    if(!resultOfAdccounts.length) {
+        return [];
+    }
+
+    return await compareRemoteAndLocalAdAccounts(resultOfAdccounts, adAccounts);
+}
+
 module.exports = {
-    setAdAccountsPictures
+    setAdAccountsPictures,
+    getAdAcccountsInformation
 };
 
 

@@ -40,6 +40,29 @@ const {
 }
 
 /**
+ * Get by spec condition
+ * @param {SequelizeModel} model
+ * @param {object} condition
+ * @param {{attributes, include}} options
+ * @returns
+ */
+ async function _getMany(model, condition, options = null) {
+    const findOptions = { where: condition };
+
+    // attributes
+    if (options && options["attributes"]) {
+        findOptions["attributes"] = options["attributes"];
+    }
+
+    // includes
+    if (options && options.include) {
+        findOptions.include = options.include;
+    }
+
+    return await model.findOne(findOptions);
+}
+
+/**
  * Get access tokens row
  * @param {Number} userId
  * @return {Promise<{status : "success" | "failed", result : any}>}
@@ -77,6 +100,24 @@ const {
 };
 
 /**
+ * Get access tokens
+ * @param {{
+ *  attributes: [string],
+ *  condition: object
+ * }} options 
+ */
+async function getAccessTokensByCondition(options) {
+    if(!options || !options.attributes || !options.condition) {
+        return [];
+    }
+
+    return await _getMany(SocialAccessTokens, 
+        options.condition, 
+        { attributes: options.attributes }
+    );
+}
+
+/**
  * Get sdk instance.
  * @param {"facebook"|"instagram"|"twitter"|"tiktok"|"linkedin"|"google"} provider
  * @param {number|null} userId
@@ -86,7 +127,7 @@ const {
 async function getSdkInstance(provider, userId = null) {
     let authData = {};
     if (null != userId) {
-        const tokensData  =await getAccessTokensRow(userId);
+        const tokensData = await getAccessTokensRow(userId);
 
         if(tokensData.status === "success") {
             authData = tokensData.result;
@@ -232,7 +273,75 @@ async function getSdkInstance(provider, userId = null) {
     throw new Error(`Unknown SDK provider: ${provider}`);
 };
 
+/**
+ * @param {"facebook"|"instagram"|"twitter"|"tiktok"|"linkedin"|"google"} provider
+ * @param {{
+ *  accessToken: string,
+ *  accessSecret: string,
+ *  refreshToken: string
+ * }} data 
+ */
+async function getSdkByNeededData(provider, data) {
+    let sdkInstance = null;
+
+    switch (provider) {
+        case "facebook":
+        case "instagram":
+            sdkInstance = new FacebookSDK(
+                SOCIAL_MEDIA_FACEBOOK_APP_ID,
+                SOCIAL_MEDIA_FACEBOOK_APP_SECRET,
+                data.accessToken || ""
+            );
+            break;
+
+        case "linkedin":
+            sdkInstance = new LinkedinSDK(
+                SOCIAL_MEDIA_LINKEDIN_CLIENT_ID,
+                SOCIAL_MEDIA_LINKEDIN_CLIENT_SECRET,
+                data.accessToken || ""
+            );
+            break;
+
+        case "tiktok":
+            sdkInstance = new TiktokSDK(
+                SOCIAL_MEDIA_TIKTOK_APP_ID,
+                SOCIAL_MEDIA_TIKTOK_SECRET,
+                data.accessToken || ""
+            );
+            break;
+
+        case "twitter":
+            sdkInstance = new TwitterSDK(
+                SOCIAL_MEDIA_TWITTER_CONSUMER_KEY,
+                SOCIAL_MEDIA_TWITTER_CONSUMER_SECRET,
+                data.accessToken || "",
+                data.accessSecret || ""
+            );
+            break;
+
+        case "youtube":
+        case "google":
+        case "google-appinstall":
+        case "google-search":
+        case "google-image":
+        case "google-display":
+            sdkInstance = new GoogleSDK({
+                clientId: SOCIAL_MEDIA_GOOGLE_CLIENT_ID,
+                clientSecret: SOCIAL_MEDIA_GOOGLE_CLIENT_SECRET,
+                developerToken: SOCIAL_MEDIA_GOOGLE_DEVELOPER_TOKEN,
+                accessToken: data.accessToken || "",
+                refreshToken: data.refreshToken || "",
+                pythonShellLogging: process.isProd ? !process.isProd() : true,
+            });
+            break;
+    }
+    
+    return sdkInstance;
+}
+
 module.exports = {
     getSdkByPlatform: getSdkInstance,
-    getSdkByRemoteUser: getSdkInstanceByRemoteUser
+    getSdkByRemoteUser: getSdkInstanceByRemoteUser,
+    getSdkByNeededData,
+    getAccessTokensByCondition
 };
