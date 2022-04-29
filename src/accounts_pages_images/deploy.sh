@@ -25,7 +25,7 @@ npm run migrate
 
 # Set configs
 PM2_NAMESPACE="$ENVIRONMENT_MODE"
-PROC_NAME_APP="crons-load-images-${PM2_NAMESPACE}"
+PROC_NAME_APP="crons-load-account-pages-${PM2_NAMESPACE}"
 MAX_CPU_APP=1
 
 # Start or restart pm2
