@@ -1,34 +1,39 @@
 const { ImagesLoadCronjobs, Sequelize } = require("../../shared/database/models");
 const AdAccountsDao = require("./ad_accounts");
+const PagesDao = require("./pages");
 
-const REMOTE_DAOS = {
+const REMOTE_ACCOUNT_DAOS = {
     facebook : require("../remote/facebook/ad-account")
 }
 
+const REMOTE_PAGE_DAOS = {
+    facebook : require("../remote/facebook/page")
+}
+
 /**
- * Limit accounts
- * @param {[object]} accounts 
+ * Limit items
+ * @param {[object]} pages 
  * @param {number} limit 
  * @returns 
  */
-function limitAccounts(accounts, limit) {
+function limitItems(items, limit) {
     const list = {};
 
-    for(let i = 0; i < accounts.length; i++) {
-        const tokenUserId = accounts[i].platformUserId;
+    for(let i = 0; i < items.length; i++) {
+        const tokenUserId = items[i].platformUserId;
 
         if(!list.hasOwnProperty(tokenUserId)) {
             list[tokenUserId] = 0;
         }
 
         if(list[tokenUserId] >= limit) {
-            accounts[i] = null;
+            items[i] = null;
         } else {
             list[tokenUserId]++;
         }
     }
 
-    return accounts.filter(acc => acc !== null);
+    return items.filter(it => it !== null);
 }
 
 /**
@@ -38,7 +43,7 @@ function limitAccounts(accounts, limit) {
  * @returns 
  */
 async function loadAccountsImages(platform, limitForToken=null) {
-    if(!REMOTE_DAOS.hasOwnProperty(platform)) {
+    if(!REMOTE_ACCOUNT_DAOS.hasOwnProperty(platform)) {
         return
     }
 
@@ -50,11 +55,37 @@ async function loadAccountsImages(platform, limitForToken=null) {
 
     // Integrate limit for per user
     if(limitForToken) {
-        adAccounts = limitAccounts(adAccounts, limitForToken);
+        adAccounts = limitItems(adAccounts, limitForToken);
     }
     
-    await REMOTE_DAOS[platform].setAdAccountsPictures(adAccounts);
+    await REMOTE_ACCOUNT_DAOS[platform].setAdAccountsPictures(adAccounts);
     await AdAccountsDao.setAdAccountsImagesToDatabase(adAccounts);
+}
+
+/**
+ * Load images and set to database
+ * @param {"facebook" | "google"} platform
+ * @param {number} limitForToken
+ * @returns 
+ */
+ async function loadPagesImages(platform, limitForToken=null) {
+    if(!REMOTE_PAGE_DAOS.hasOwnProperty(platform)) {
+        return
+    }
+
+    let pages = await PagesDao.loadPagesNeededImagesLoad(platform);
+
+    if(!pages || !pages.length) {
+        return;
+    }
+
+    // Integrate limit for per user
+    if(limitForToken) {
+        pages = limitItems(pages, limitForToken);
+    }
+    
+    await REMOTE_PAGE_DAOS[platform].setPagesPictures(pages);
+    await PagesDao.setPagesImagesToDatabase(pages);
 }
 
 /**
@@ -65,7 +96,7 @@ async function loadAccountsImages(platform, limitForToken=null) {
  */
  async function loadAccountsInfo(platform, limitForToken=null) {
     try {
-        if(!REMOTE_DAOS.hasOwnProperty(platform)) {
+        if(!REMOTE_ACCOUNT_DAOS.hasOwnProperty(platform)) {
             return
         }
     
@@ -77,12 +108,44 @@ async function loadAccountsImages(platform, limitForToken=null) {
     
         // Integrate limit for per user
         if(limitForToken) {
-            adAccounts = limitAccounts(adAccounts, limitForToken);
+            adAccounts = limitItems(adAccounts, limitForToken);
         }
         
-        const resolvedAccounts = await REMOTE_DAOS[platform].getAdAcccountsInformation(adAccounts);
+        const resolvedAccounts = await REMOTE_ACCOUNT_DAOS[platform].getAdAcccountsInformation(adAccounts);
         if(resolvedAccounts && resolvedAccounts.length) {
             await AdAccountsDao.setAdAccountsInformationToDatabase(resolvedAccounts);
+        }
+    } catch (error) {
+        console.log(error, "-----------------------------")
+    }
+}
+
+/**
+ * Load images and set to database
+ * @param {"facebook" | "google"} platform
+ * @param {number} limitForToken
+ * @returns 
+ */
+ async function loadPagesInfo(platform, limitForToken=null) {
+    try {
+        if(!REMOTE_PAGE_DAOS.hasOwnProperty(platform)) {
+            return
+        }
+    
+        let pages = await PagesDao.loadPagesNeededInfoLoad(platform);
+    
+        if(!pages || !pages.length) {
+            return;
+        }
+    
+        // Integrate limit for per user
+        if(limitForToken) {
+            pages = limitItems(pages, limitForToken);
+        }
+        
+        const resolvedPages = await REMOTE_PAGE_DAOS[platform].getPagesInformation(pages);
+        if(resolvedPages && resolvedPages.length) {
+            await PagesDao.setPagesInformationToDatabase(resolvedPages);
         }
     } catch (error) {
         console.log(error, "-----------------------------")
@@ -121,7 +184,7 @@ async function processCronjob(processCB, platform, CRON_CODE, limitForPerToken=n
 
 /**
  * load images
- * @param {"load-accounts-images" | "load-accounts-info"} task
+ * @param {"load-accounts-images" | "load-accounts-info" | "load-pages-images" | "load-pages-info"} task
  * @param {"facebook" | "google"} platform
  * @param {number} CRON_CODE
  * @param {number} limitForPerToken
@@ -134,6 +197,14 @@ async function execute(task, platform, CRON_CODE, limitForPerToken=null) {
 
     if(task === "load-accounts-info") {
        await processCronjob(loadAccountsInfo, platform, CRON_CODE, limitForPerToken)
+    }
+
+    if(task === "load-pages-images") {
+        await processCronjob(loadPagesImages, platform, CRON_CODE, limitForPerToken)
+    }
+
+    if(task === "load-pages-info") {
+        await processCronjob(loadPagesInfo, platform, CRON_CODE, limitForPerToken)
     }
 }
 

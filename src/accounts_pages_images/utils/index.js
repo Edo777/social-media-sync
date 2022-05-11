@@ -1,5 +1,7 @@
 const sleep = require("./sleep");
+const executePromisesWithChunks = require("./chunk-promises");
 
 module.exports = {
-    sleep
+    sleep,
+    executePromisesWithChunks
 }

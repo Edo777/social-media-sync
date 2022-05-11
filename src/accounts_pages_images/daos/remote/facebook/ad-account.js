@@ -50,7 +50,9 @@ function setResultToAccounts(accounts, result) {
     accounts.forEach((account) => {
         const owner = account["adAccountOwnerId"];
         if (result.hasOwnProperty(owner)) {
-            account["adAccountIcon"] = result[owner];
+            if(!account["adAccountIcon"] || account["adAccountIcon"] === "error") {
+                account["adAccountIcon"] = result[owner];
+            }
         }
     });
 

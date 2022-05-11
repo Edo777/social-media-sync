@@ -1,6 +1,6 @@
 "use strict";
 
-const { SocialAdAccounts, SocialAssoAdaccountsWorkspaces, Sequelize} = require("../../shared/database/models");
+const { SocialPages, SocialAssoPagesWorkspaces } = require("../../shared/database/models");
 const { executePromisesWithChunks } = require("../../utils")
 const _ = require("lodash");
 
@@ -63,106 +63,97 @@ async function _getMany(model, condition, options) {
 }
 
 /**
- * Filter and return only associated ad accounts
- * @param {[{id: number, adAccountId: string}]} adAccounts 
+ * Filter and return only associated pages
+ * @param {[{id: number, pageId: string}]} pages 
  * @returns 
  */
-async function filterAssociatedAdAccounts(adAccounts) {
-    if(adAccounts && adAccounts.length){
-        const ids = adAccounts.map(a => a.id);
+async function filterAssociatedPages(pages) {
+    if(pages && pages.length){
+        const ids = pages.map(a => a.id);
         
         const associations = await _getMany(
-            SocialAssoAdaccountsWorkspaces, 
-            { adAccountId: ids },
-            { attributes: ["id", "adAccountId"] }
+            SocialAssoPagesWorkspaces, 
+            { pageId: ids },
+            { attributes: ["id", "pageId"] }
         );
 
         if(!associations.length){
-            adAccounts = [];
+            pages = [];
         }else{
-            const neededIds = associations.map(a => a.adAccountId);
+            const neededIds = associations.map(a => a.pageId);
 
-            adAccounts = adAccounts.filter(acc => neededIds.includes(acc.id));
+            pages = pages.filter(pg => neededIds.includes(pg.id));
         }
     }
    
-    return adAccounts;
+    return pages;
 }
 
 /**
- * Load ad accounts which have need to load images
- * !!! Only accounts whcih connected some workspace
+ * Load pages which have need to load images
+ * !!! Only pages which connected some workspace
  * @param { "facebook" | "google" } platform 
  * @param {boolean} filterAssociated
  * @returns {Promise<array>}
  */
-async function loadAccountsNeededImagesLoad(platform, filterAssociated=true) {
-    let adAccounts = await _getMany(SocialAdAccounts, {
+async function loadPagesNeededImagesLoad(platform, filterAssociated=true) {
+    let pages = await _getMany(SocialPages, {
         platform: platform,
-        adAccountIcon: "not-loaded",
+        pageIcon: "not-loaded",
         userVisible: true,
     }, {
-        attribute: ["id", "adAccountOwnerId", "adAccountIcon", "platformUserId", "adAccountId"],
+        attribute: ["id", "pageId", "pageIcon", "platformUserId"],
     });
 
-    if(filterAssociated && adAccounts.length){
-        adAccounts = await filterAssociatedAdAccounts(adAccounts);
+    if(filterAssociated && pages.length){
+        pages = await filterAssociatedPages(pages);
     }
 
-    return adAccounts;
+    return pages;
 }
 
 /**
- * Load ad accounts which have need to load info
- * !!! Only accounts whcih connected some workspace
+ * Load pages which have need to load info
+ * !!! Only pages whcih connected some workspace
  * @param { "facebook" | "google" } platform 
  * @returns {Promise<array>}
  */
- async function loadAccountsNeededInfoLoad(platform, filterAssociated) {
-    let adAccounts = await _getMany(SocialAdAccounts, {
+ async function loadPagesNeededInfoLoad(platform, filterAssociated) {
+    let pages = await _getMany(SocialPages, {
         platform: platform,
         userVisible: true,
     }, {
-        attribute: [
-            "id", 
-            "userId", 
-            "adAccountOwnerId", 
-            "adAccountIcon", 
-            "platformUserId", 
-            "adAccountId", 
-            "status", 
-            "disableReason"
-        ],
+        attribute: ["id", "userId", "platformUserId", "pageId", "promotionEligible", "promotionIneligibleReason"],
     });
 
-    if(filterAssociated && adAccounts.length){
-        adAccounts = await filterAssociatedAdAccounts(adAccounts);
+    if(filterAssociated && pages.length){
+        pages = await filterAssociatedPages(pages);
     }
 
-    return adAccounts;
+    return pages;
 }
 
 /**
- * Set ad accounts icons to database
+ * Set pages icons to database
  * @param {[{ 
  *  id: number, 
- *  adAccountIcon: string, 
- *  adAccountId: string,
- *  adAccountOwnerId: string
- * }]} adAccounts 
+ *  pageIcon: string, 
+ *  pageId: string,
+ *  platformUserId: string
+ * }]} pages 
  * @returns 
  */
-async function setAdAccountsImagesToDatabase(adAccounts){
-    if(adAccounts && adAccounts.length) {
-        const groupedAdAccounts = _.groupBy(adAccounts, 'adAccountOwnerId');
+async function setPagesImagesToDatabase(pages){
+    if(pages && pages.length) {
+        const groupedPages = _.groupBy(pages, 'pageId');
 
         const promises = [];
     
-        Object.keys(groupedAdAccounts).forEach((ownerId) => {
-            const localIds = groupedAdAccounts[ownerId].map(a => a.id);
-            const adAccountIcon = groupedAdAccounts[ownerId][0].adAccountIcon;
+        Object.keys(groupedPages).forEach((pageId) => {
+            const localIds = groupedPages[pageId].map(a => a.id);
+            const pageIcon = groupedPages[pageId][0].pageIcon;
     
-            promises.push(_update({ adAccountIcon }, { id: localIds }));
+            promises.push(_update({ pageIcon }, { id: localIds }));
         });
 
         await executePromisesWithChunks(promises, 5);
@@ -202,8 +193,9 @@ async function setAdAccountsInformationToDatabase(adAccounts) {
 }
 
 module.exports = {
-    loadAccountsNeededImagesLoad,
-    loadAccountsNeededInfoLoad,
-    setAdAccountsImagesToDatabase,
+    loadPagesNeededImagesLoad,
+    setPagesImagesToDatabase,
+
+    loadPagesNeededInfoLoad,
     setAdAccountsInformationToDatabase
 };
