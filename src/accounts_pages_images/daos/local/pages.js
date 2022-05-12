@@ -28,7 +28,7 @@ async function _get(model, condition, options = null) {
 }
 
 /**
- * Update accounts
+ * Update pages
  * @param {object} data 
  * @param {object} condition 
  * @returns 
@@ -36,7 +36,7 @@ async function _get(model, condition, options = null) {
  async function _update(data, condition) {
     const updateOptions = { where: condition };
 
-    return await SocialAdAccounts.update(data, updateOptions);
+    return await SocialPages.update(data, updateOptions);
 }
 
 /**
@@ -118,7 +118,7 @@ async function loadPagesNeededImagesLoad(platform, filterAssociated=true) {
  * @param { "facebook" | "google" } platform 
  * @returns {Promise<array>}
  */
- async function loadPagesNeededInfoLoad(platform, filterAssociated) {
+ async function loadPagesNeededInfoLoad(platform, filterAssociated=true) {
     let pages = await _getMany(SocialPages, {
         platform: platform,
         userVisible: true,
@@ -166,24 +166,29 @@ async function setPagesImagesToDatabase(pages){
  * 
  * @param {[{
  *  id: number, 
- *  status: string,
- *  disableReason: string
- * }]} adAccounts 
+ *  promotionEligible: string,
+ *  promotionIneligibleReason: string
+ * }]} pages 
  */
-async function setAdAccountsInformationToDatabase(adAccounts) {
-    if(adAccounts && adAccounts.length) {
-        const groupedAdAccounts = _.groupBy(adAccounts, (it) => {
-            return `${it.status}-${it.disableReason}`;
+async function setPagesInformationToDatabase(pages) {
+    if(pages && pages.length) {
+        const groupedPages = _.groupBy(pages, (it) => {
+            return `${it.promotionEligible}-${it.promotionIneligibleReason}`;
         });
 
         const promises = [];
     
-        Object.keys(groupedAdAccounts).forEach((groupKey) => {
-            const { status, disableReason } = groupKey.split("-");
+        Object.keys(groupedPages).forEach((groupKey) => {
+            const { promotionEligible, promotionIneligibleReason } = groupKey.split("-");
 
-            const localIds = groupedAdAccounts[groupKey].map(a => a.id);
+            const localIds = groupedPages[groupKey].map(p => p.id);
     
-            promises.push(_update({ status, disableReason }, { id: localIds }));
+            promises.push(_update({ 
+                promotionEligible, 
+                promotionIneligibleReason 
+            }, { 
+                id: localIds 
+            }));
         });
     
         await executePromisesWithChunks(promises, 5);
@@ -197,5 +202,5 @@ module.exports = {
     setPagesImagesToDatabase,
 
     loadPagesNeededInfoLoad,
-    setAdAccountsInformationToDatabase
+    setPagesInformationToDatabase
 };

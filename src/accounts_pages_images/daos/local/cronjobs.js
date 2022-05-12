@@ -139,7 +139,7 @@ async function loadAccountsImages(platform, limitForToken=null) {
         }
     
         // Integrate limit for per user
-        if(limitForToken) {
+        if(limitForToken && pages.length > limitForToken) {
             pages = limitItems(pages, limitForToken);
         }
         

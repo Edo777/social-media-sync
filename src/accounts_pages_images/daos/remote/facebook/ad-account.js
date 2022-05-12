@@ -234,11 +234,14 @@ async function compareRemoteAndLocalAdAccounts(remoteAdAccounts, localAdAccounts
  * @returns {[object]} accounts to update
  */
 async function getAdAcccountsInformation(adAccounts) {
+    // Set unique list for remote userIds
+    const platformUserIds = Array.from(new Set(adAccounts.map(a => a.userId)));
+
     // Get tokens
     const tokensList = await getAccessTokensByCondition({
         condition: {
             facebookIsLogged: true,
-            userId: adAccounts.map(a => a.userId),
+            facebookUserId: platformUserIds,
         },
         attributes: ["facebookUserId", "facebookAccessToken"]
     });

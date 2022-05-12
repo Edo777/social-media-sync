@@ -118,7 +118,7 @@ async function loadAccountsNeededImagesLoad(platform, filterAssociated=true) {
  * @param { "facebook" | "google" } platform 
  * @returns {Promise<array>}
  */
- async function loadAccountsNeededInfoLoad(platform, filterAssociated) {
+ async function loadAccountsNeededInfoLoad(platform, filterAssociated=true) {
     let adAccounts = await _getMany(SocialAdAccounts, {
         platform: platform,
         userVisible: true,

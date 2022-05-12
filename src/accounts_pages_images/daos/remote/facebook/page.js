@@ -1,5 +1,5 @@
 const { getSdkByRemoteUser, getSdkByNeededData, getAccessTokensByCondition } = require("../../global/sdk");
-const { User, AdAccount } = require("../../../../sdks/facebook");
+const { User, Page } = require("../../../../sdks/facebook");
 const _ = require("lodash");
 
 function convertAccountStatus(code) {
@@ -166,18 +166,19 @@ async function loadPages(sdk) {
 }
 
 /**
- * Compare and return only accounts which have need to update
+ * Compare and return only pages which have need to update
+ * (compare promotionEligible and promotionIneligibleReason)
  * @param {[{
  *  platformUserId: string,
- *  status: string,
- *  disableReason: string,
+ *  promotionEligible: string,
+ *  promotionIneligibleReason: string,
  *  id: string
  * }]} remoteAdAccounts 
  * @param {[{
  *  id: number,
- *  adAccountId: string,
- *  status: string,
- *  disableReason: string,
+ *  pageId: string,
+ *  promotionEligible: string,
+ *  promotionIneligibleReason: string,
  *  platformUserId: string
  * }]} localAdAccounts 
  * @returns 
@@ -195,6 +196,7 @@ async function compareRemoteAndLocalPages(remotePages, localPages) {
             continue;
         }
 
+        // Depending from Link L1
         const neededCurrentUserPages = groupedLocalPages[platformUserId].filter(pg => pg !== null);
 
         if(!neededCurrentUserPages.length) {
@@ -214,6 +216,7 @@ async function compareRemoteAndLocalPages(remotePages, localPages) {
             neededLocalPage.promotionIneligibleReason = promotionIneligibleReason;
             result.push(neededLocalPage);
 
+            // L1
             groupedLocalPages[platformUserId][neededPageIndex] = null;
         }
     }
@@ -227,11 +230,14 @@ async function compareRemoteAndLocalPages(remotePages, localPages) {
  * @returns {[object]} pages to update
  */
 async function getPagesInformation(pages) {
+    // Set unique list for remote userIds
+    const platformUserIds = Array.from(new Set(pages.map(p => p.platformUserId)));
+
     // Get tokens
     const tokensList = await getAccessTokensByCondition({
         condition: {
             facebookIsLogged: true,
-            userId: pages.map(p => p.userId),
+            facebookUserId: platformUserIds,
         },
         attributes: ["facebookUserId", "facebookAccessToken"]
     });
@@ -244,7 +250,7 @@ async function getPagesInformation(pages) {
     const tokensGroupedByRemoteUser = _.groupBy(tokensList, "facebookUserId");
     const sdks = {}
 
-    // Filter accounts which accesstoken is exists
+    // Filter pages which accesstoken is exists and set sdks
     for(let i = 0; i < pages.length; i++) {
         const rUserId = pages[i].platformUserId;
         if(tokensGroupedByRemoteUser.hasOwnProperty(rUserId)) {
