@@ -198,6 +198,9 @@ async function processCronjob(processCB, platform, CRON_CODE, limitForPerToken=n
         await updateJob(CRON_CODE, true);
     } catch (error) {
         Err.write(error);
+
+        // end cronjob
+        await updateJob(CRON_CODE, true);
     }
 }
 
