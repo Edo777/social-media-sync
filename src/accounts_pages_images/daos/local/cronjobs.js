@@ -1,4 +1,7 @@
-const { ImagesLoadCronjobs, Sequelize } = require("../../shared/database/models");
+const { ImagesLoadCronjobs } = require("../../shared/database/models");
+const { Err } = require("../../utils")
+
+
 const AdAccountsDao = require("./ad_accounts");
 const PagesDao = require("./pages");
 
@@ -17,23 +20,27 @@ const REMOTE_PAGE_DAOS = {
  * @returns 
  */
 function limitItems(items, limit) {
-    const list = {};
+    try {
+        const list = {};
 
-    for(let i = 0; i < items.length; i++) {
-        const tokenUserId = items[i].platformUserId;
+        for(let i = 0; i < items.length; i++) {
+            const tokenUserId = items[i].platformUserId;
 
-        if(!list.hasOwnProperty(tokenUserId)) {
-            list[tokenUserId] = 0;
+            if(!list.hasOwnProperty(tokenUserId)) {
+                list[tokenUserId] = 0;
+            }
+
+            if(list[tokenUserId] >= limit) {
+                items[i] = null;
+            } else {
+                list[tokenUserId]++;
+            }
         }
 
-        if(list[tokenUserId] >= limit) {
-            items[i] = null;
-        } else {
-            list[tokenUserId]++;
-        }
+        return items.filter(it => it !== null);
+    } catch (error) {
+        Err.write(error);
     }
-
-    return items.filter(it => it !== null);
 }
 
 /**
@@ -43,23 +50,27 @@ function limitItems(items, limit) {
  * @returns 
  */
 async function loadAccountsImages(platform, limitForToken=null) {
-    if(!REMOTE_ACCOUNT_DAOS.hasOwnProperty(platform)) {
-        return
-    }
-
-    let adAccounts = await AdAccountsDao.loadAccountsNeededImagesLoad(platform);
-
-    if(!adAccounts || !adAccounts.length) {
-        return;
-    }
-
-    // Integrate limit for per user
-    if(limitForToken) {
-        adAccounts = limitItems(adAccounts, limitForToken);
-    }
+    try {
+        if(!REMOTE_ACCOUNT_DAOS.hasOwnProperty(platform)) {
+            return
+        }
     
-    await REMOTE_ACCOUNT_DAOS[platform].setAdAccountsPictures(adAccounts);
-    await AdAccountsDao.setAdAccountsImagesToDatabase(adAccounts);
+        let adAccounts = await AdAccountsDao.loadAccountsNeededImagesLoad(platform);
+    
+        if(!adAccounts || !adAccounts.length) {
+            return;
+        }
+    
+        // Integrate limit for per user
+        if(limitForToken) {
+            adAccounts = limitItems(adAccounts, limitForToken);
+        }
+        
+        await REMOTE_ACCOUNT_DAOS[platform].setAdAccountsPictures(adAccounts);
+        await AdAccountsDao.setAdAccountsImagesToDatabase(adAccounts);
+    } catch (error) {
+        Err.write(error);
+    }
 }
 
 /**
@@ -69,23 +80,27 @@ async function loadAccountsImages(platform, limitForToken=null) {
  * @returns 
  */
  async function loadPagesImages(platform, limitForToken=null) {
-    if(!REMOTE_PAGE_DAOS.hasOwnProperty(platform)) {
-        return
-    }
-
-    let pages = await PagesDao.loadPagesNeededImagesLoad(platform);
-
-    if(!pages || !pages.length) {
-        return;
-    }
-
-    // Integrate limit for per user
-    if(limitForToken) {
-        pages = limitItems(pages, limitForToken);
-    }
+    try {
+        if(!REMOTE_PAGE_DAOS.hasOwnProperty(platform)) {
+            return
+        }
     
-    await REMOTE_PAGE_DAOS[platform].setPagesPictures(pages);
-    await PagesDao.setPagesImagesToDatabase(pages);
+        let pages = await PagesDao.loadPagesNeededImagesLoad(platform);
+    
+        if(!pages || !pages.length) {
+            return;
+        }
+    
+        // Integrate limit for per user
+        if(limitForToken) {
+            pages = limitItems(pages, limitForToken);
+        }
+        
+        await REMOTE_PAGE_DAOS[platform].setPagesPictures(pages);
+        await PagesDao.setPagesImagesToDatabase(pages);
+    } catch (error) {
+        Err.write(error);
+    }
 }
 
 /**
@@ -116,7 +131,7 @@ async function loadAccountsImages(platform, limitForToken=null) {
             await AdAccountsDao.setAdAccountsInformationToDatabase(resolvedAccounts);
         }
     } catch (error) {
-        console.log(error, "-----------------------------")
+        Err.write(error);
     }
 }
 
@@ -148,7 +163,7 @@ async function loadAccountsImages(platform, limitForToken=null) {
             await PagesDao.setPagesInformationToDatabase(resolvedPages);
         }
     } catch (error) {
-        console.log(error, "-----------------------------")
+        Err.write(error);
     }
 }
 
@@ -162,24 +177,28 @@ async function loadAccountsImages(platform, limitForToken=null) {
  * @returns 
  */
 async function processCronjob(processCB, platform, CRON_CODE, limitForPerToken=null) {
-    if(!["facebook", "google"].includes(platform)) {
-        return
-    }
-
-    const canWork = await canStartJob(CRON_CODE);
-
-    if(!canWork) {
-        return
-    }
-
-    // Start cronjob
-    await updateJob(CRON_CODE, false);
+    try {
+        if(!["facebook", "google"].includes(platform)) {
+            return
+        }
     
-    // Load images and set to database
-    await processCB(platform, limitForPerToken);
+        const canWork = await canStartJob(CRON_CODE);
     
-    // end cronjob
-    await updateJob(CRON_CODE, true);
+        if(!canWork) {
+            return
+        }
+    
+        // Start cronjob
+        await updateJob(CRON_CODE, false);
+        
+        // Load images and set to database
+        await processCB(platform, limitForPerToken);
+        
+        // end cronjob
+        await updateJob(CRON_CODE, true);
+    } catch (error) {
+        Err.write(error);
+    }
 }
 
 /**

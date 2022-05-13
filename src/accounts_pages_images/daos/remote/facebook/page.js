@@ -2,40 +2,6 @@ const { getSdkByRemoteUser, getSdkByNeededData, getAccessTokensByCondition } = r
 const { User, Page } = require("../../../../sdks/facebook");
 const _ = require("lodash");
 
-function convertAccountStatus(code) {
-    const statuses = {
-        1: "ACTIVE",
-        2: "DISABLED",
-        3: "UNSETTLED",
-        7: "PENDING_RISK_REVIEW",
-        8: "PENDING_SETTLEMENT",
-        9: "IN_GRACE_PERIOD",
-        100: "PENDING_CLOSURE",
-        101: "CLOSED",
-        201: "ANY_ACTIVE",
-        202: "ANY_CLOSED",
-    };
-
-    return statuses[code];
-}
-
-function convertDisableReason(code) {
-    const reasons = {
-        0: "NONE",
-        1: "ADS_INTEGRITY_POLICY",
-        2: "ADS_IP_REVIEW",
-        3: "RISK_PAYMENT",
-        4: "GRAY_ACCOUNT_SHUT_DOWN",
-        5: "ADS_AFC_REVIEW",
-        6: "BUSINESS_INTEGRITY_RAR",
-        7: "PERMANENT_CLOSE",
-        8: "UNUSED_RESELLER_ACCOUNT",
-        9: "UNUSED_ACCOUNT",
-    };
-
-    return reasons[code];
-}
-
 /**
  * Set taked result to pages
  * @param {[{ id: string, pageId: string }]} pages
@@ -64,10 +30,10 @@ function setResultToPages(pages, result, successLoadPageIds=null) {
 }
 
 /**
- * Batch Load pictures of accounts
- * @param {[{ id: string, ownerId }]} adAccounts
+ * Batch Load pictures of pages
+ * @param {[{ id: string, pageId: string }]} pages
  * @param {any} sdk
- * @returns {{ownerId: "logo" | "error"} | [{ id: string, ownerId, logo: string }]}
+ * @returns {{pageId: "logo" | "error"} | [{ id: string, pageIcon: string, logo: string }]}
  */
 async function getPagesPicturesBatch(pages, sdk, setResultToPagesCB = null) {
     const groupedPages = _.groupBy(pages, "pageId");
@@ -125,7 +91,10 @@ async function setPagesPictures(pages, sdk = null) {
     for (const remoteUserId in groupedPages) {
         // Get sdk for remote user
         const sdk = await getSdkByRemoteUser("facebook", remoteUserId);
+
+        // Filter pages for which we need load icon
         const pagesLoadPicturesFor = groupedPages[remoteUserId].filter(page => !successLoadPageIds[page.pageId]);
+
         if (pagesLoadPicturesFor.length && sdk && sdk.authData && sdk.authData.facebookAccessToken) {
             // Get pictures result
             const result = await getPagesPicturesBatch(pagesLoadPicturesFor, sdk);
@@ -137,7 +106,7 @@ async function setPagesPictures(pages, sdk = null) {
 }
 
 /**
- * TODO: Get ad accounts facebook
+ * Get pages from facebook
  * @param {FacebookSDK} sdk
  * @returns
  */
@@ -173,15 +142,15 @@ async function loadPages(sdk) {
  *  promotionEligible: string,
  *  promotionIneligibleReason: string,
  *  id: string
- * }]} remoteAdAccounts 
+ * }]} remotePages 
  * @param {[{
  *  id: number,
  *  pageId: string,
  *  promotionEligible: string,
  *  promotionIneligibleReason: string,
  *  platformUserId: string
- * }]} localAdAccounts 
- * @returns 
+ * }]} localPages 
+ * @returns
  */
 async function compareRemoteAndLocalPages(remotePages, localPages) {
     if(!remotePages.length || !localPages.length) {
@@ -190,6 +159,7 @@ async function compareRemoteAndLocalPages(remotePages, localPages) {
 
     const result = [];
     const groupedLocalPages = _.groupBy(localPages, "platformUserId");
+
     for(let i = 0; i < remotePages.length; i++) {
         const { platformUserId, promotionEligible, promotionIneligibleReason, id: remoteId} = remotePages[i];
         if(!groupedLocalPages.hasOwnProperty(platformUserId)) {
@@ -277,6 +247,7 @@ async function getPagesInformation(pages) {
         pagesLoadPromises.push(loadPages(sdks[remoteUserId].sdk));
     });
 
+    // Execute pages load
     let resultOfPages = await Promise.allSettled(pagesLoadPromises);
     resultOfPages = resultOfPages.filter(res => res.status === "fulfilled")
 
