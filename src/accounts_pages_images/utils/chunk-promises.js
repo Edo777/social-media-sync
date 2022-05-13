@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 /**
  * Execute promises with chunks
  * @param {[Promise]} promises 
