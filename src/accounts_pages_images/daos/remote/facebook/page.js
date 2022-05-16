@@ -16,11 +16,11 @@ function setResultToPages(pages, result, successLoadPageIds=null) {
     pages.forEach((page) => {
         const pageId = page["pageId"];
         if (result.hasOwnProperty(pageId)) {
-            if(!result["pageIcon"] || result["pageIcon"] == "error") {
+            if(!page["pageIcon"] || ["error", "not-loaded"].includes(page["pageIcon"])) {
                 page["pageIcon"] = result[pageId];
             }
 
-            if(page["pageIcon"] !== "error" && successLoadPageIds && !successLoadPageIds[pageId]) {
+            if(!["error", "not-loaded"].includes(page["pageIcon"]) && successLoadPageIds && !successLoadPageIds[pageId]) {
                 successLoadPageIds[pageId] = true;
             }
         }
