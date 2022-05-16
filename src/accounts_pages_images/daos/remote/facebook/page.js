@@ -16,7 +16,7 @@ function setResultToPages(pages, result, successLoadPageIds=null) {
     pages.forEach((page) => {
         const pageId = page["pageId"];
         if (result.hasOwnProperty(pageId)) {
-            if(!page["pageIcon"] || page["pageIcon"] == "error") {
+            if(!result["pageIcon"] || result["pageIcon"] == "error") {
                 page["pageIcon"] = result[pageId];
             }
 
