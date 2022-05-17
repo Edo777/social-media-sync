@@ -54,7 +54,7 @@ async function getPagesPicturesBatch(pages, sdk, setResultToPagesCB = null) {
                 provider: "facebook",
                 count: 1,
                 description: "load_pages_images"
-            });
+            }).then();
         }
     });
 
@@ -127,7 +127,7 @@ async function loadPages(sdk) {
                 provider: "facebook",
                 count: 1,
                 description: "load_pages"
-            });
+            }).then();
         }
 
         const user = sdk.instance(User, { id: sdk.authData.facebookUserId });

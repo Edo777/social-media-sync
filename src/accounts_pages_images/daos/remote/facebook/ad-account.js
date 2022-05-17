@@ -84,7 +84,7 @@ async function getAccountsPicturesBatch(adAccounts, sdk, setResultToAccountsCB =
                 provider: "facebook",
                 count: 1,
                 description: "load_accounts_images"
-            });
+            }).then();
         }
     });
 
@@ -154,7 +154,7 @@ async function loadAdAccounts(sdk, pictureOptions = { set: false, limit: null })
                 provider: "facebook",
                 count: 1,
                 description: "load_accounts"
-            });
+            }).then();
         }
 
         const user = sdk.instance(User, { id: sdk.authData.facebookUserId });
