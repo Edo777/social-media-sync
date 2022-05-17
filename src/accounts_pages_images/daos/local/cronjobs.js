@@ -1,5 +1,6 @@
-const { ImagesLoadCronjobs, AccountsPagesApiCalls } = require("../../shared/database/models");
+const { ImagesLoadCronjobs, AccountsPagesApiCalls , Sequelize } = require("../../shared/database/models");
 const { Err } = require("../../utils")
+const { ne } = Sequelize.Op;
 
 
 const AdAccountsDao = require("./ad_accounts");
