@@ -1,4 +1,4 @@
-const { ImagesLoadCronjobs } = require("../../shared/database/models");
+const { ImagesLoadCronjobs, AccountsPagesApiCalls } = require("../../shared/database/models");
 const { Err } = require("../../utils")
 
 
@@ -228,6 +228,10 @@ async function execute(task, platform, CRON_CODE, limitForPerToken=null) {
     if(task === "load-pages-info") {
         await processCronjob(loadPagesInfo, platform, CRON_CODE, limitForPerToken)
     }
+
+    if(task === "reset-api-calls") {
+        await resetApiCallsCount(CRON_CODE);
+    }
 }
 
 /**
@@ -259,6 +263,32 @@ async function updateJob(JOB_CODE, finished) {
     });
 
     await instance.update({ canLoad: finished });
+}
+
+/**
+ * Reset all api calls count
+ * @param {number} CRON_CODE
+ * @param {object} condition 
+ * @returns 
+ */
+ async function resetApiCallsCount(CRON_CODE, condition) {
+    const canWork = await canStartJob(CRON_CODE);
+
+    if(!canWork) {
+        return
+    }
+    
+    // Start cronjob
+    await updateJob(CRON_CODE, false);
+
+    // Reset api calls
+    await AccountsPagesApiCalls.update(
+        { count: 0 }, 
+        { where : condition || { id: {[ne]: null} }
+    })
+
+    // end cronjob
+    await updateJob(CRON_CODE, true);
 }
 
 module.exports = {
