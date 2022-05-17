@@ -2,6 +2,8 @@ const { getSdkByRemoteUser, getSdkByNeededData, getAccessTokensByCondition } = r
 const { User, AdAccount } = require("../../../../sdks/facebook");
 const _ = require("lodash");
 
+const LocalApiCallsDao = require("../../local/api_calls");
+
 function convertAccountStatus(code) {
     const statuses = {
         1: "ACTIVE",
@@ -76,6 +78,14 @@ async function getAccountsPicturesBatch(adAccounts, sdk, setResultToAccountsCB =
         adAccountsOwners.push(owner);
         result[owner] = "";
         picturePromises.push(sdk.getPicture(owner));
+
+        if(sdk && sdk.authData.facebookUserId) {
+            LocalApiCallsDao.createApiCall(sdk.authData.facebookUserId, {
+                provider: "facebook",
+                count: 1,
+                description: "load_accounts_images"
+            });
+        }
     });
 
     // Get pictures of accounts
@@ -139,6 +149,14 @@ async function setAdAccountsPictures(adAccounts, sdk = null) {
  */
 async function loadAdAccounts(sdk, pictureOptions = { set: false, limit: null }) {
     try {
+        if(sdk && sdk.authData.facebookUserId) {
+            LocalApiCallsDao.createApiCall(sdk.authData.facebookUserId, {
+                provider: "facebook",
+                count: 1,
+                description: "load_accounts"
+            });
+        }
+
         const user = sdk.instance(User, { id: sdk.authData.facebookUserId });
 
         const response = await user.getAdAccounts([

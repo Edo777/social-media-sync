@@ -18,11 +18,11 @@ function facebookAccountsInfoLoad() {
 }
 
 module.exports = function (schedule) {
-    schedule("*/60 * * * *", function () {
+    schedule("*/83 * * * *", function () {
         facebookAccountsInfoLoad();
     });
 
-    schedule("*/60 * * * *", function () {
+    schedule("*/82 * * * *", function () {
         facebookPagesInfoLoad();
     });
 };

@@ -18,11 +18,11 @@ function facebookPagesImagesLoad() {
 }
 
 module.exports = function (schedule) {
-    schedule("*/2 * * * *", function () {
+    schedule("*/20 * * * *", function () {
         facebookAccountsImagesLoad();
     });
 
-    schedule("*/2 * * * *", function () {
+    schedule("*/20 * * * *", function () {
         facebookPagesImagesLoad();
     });
 };

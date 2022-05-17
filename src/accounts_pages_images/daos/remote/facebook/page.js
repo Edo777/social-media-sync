@@ -2,6 +2,8 @@ const { getSdkByRemoteUser, getSdkByNeededData, getAccessTokensByCondition } = r
 const { User, Page } = require("../../../../sdks/facebook");
 const _ = require("lodash");
 
+const LocalApiCallsDao = require("../../local/api_calls");
+
 /**
  * Set taked result to pages
  * @param {[{ id: string, pageId: string }]} pages
@@ -46,6 +48,14 @@ async function getPagesPicturesBatch(pages, sdk, setResultToPagesCB = null) {
         pageIds.push(pageId);
         result[pageId] = "";
         picturePromises.push(sdk.getPicture(pageId));
+
+        if(sdk && sdk.authData.facebookUserId) {
+            LocalApiCallsDao.createApiCall(sdk.authData.facebookUserId, {
+                provider: "facebook",
+                count: 1,
+                description: "load_pages_images"
+            });
+        }
     });
 
     // Get pictures of accounts
@@ -112,6 +122,14 @@ async function setPagesPictures(pages, sdk = null) {
  */
 async function loadPages(sdk) {
     try {
+        if(sdk && sdk.authData.facebookUserId) {
+            LocalApiCallsDao.createApiCall(sdk.authData.facebookUserId, {
+                provider: "facebook",
+                count: 1,
+                description: "load_pages"
+            });
+        }
+
         const user = sdk.instance(User, { id: sdk.authData.facebookUserId });
 
         const response = await user.getAccounts([
