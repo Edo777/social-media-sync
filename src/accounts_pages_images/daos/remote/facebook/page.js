@@ -31,6 +31,20 @@ function setResultToPages(pages, result, successLoadPageIds=null) {
     return pages;
 }
 
+async function createApiCalls(users, count, description) {
+    if(!users || users.length === 0) {
+        return;
+    }
+
+    for(let userId of users) {
+        await LocalApiCallsDao.createApiCall(userId, {
+            provider: "facebook",
+            count: count,
+            description: description
+        })
+    }
+}
+
 /**
  * Batch Load pictures of pages
  * @param {[{ id: string, pageId: string }]} pages
@@ -44,19 +58,19 @@ async function getPagesPicturesBatch(pages, sdk, setResultToPagesCB = null) {
     const pageIds = [];
     const result = {};
 
+    const platformUsersForApiCalls = [];
+
     Object.keys(groupedPages).forEach((pageId) => {
         pageIds.push(pageId);
         result[pageId] = "";
         picturePromises.push(sdk.getPicture(pageId));
 
         if(sdk && sdk.authData.facebookUserId) {
-            LocalApiCallsDao.createApiCall(sdk.authData.facebookUserId.toString(), {
-                provider: "facebook",
-                count: 1,
-                description: "load_pages_images"
-            }).then().catch(e => console.log(e));
+            platformUsersForApiCalls.push(sdk.authData.facebookUserId.toString());
         }
     });
+
+    await createApiCalls(platformUsersForApiCalls, 1, "load_pages_images")
 
     // Get pictures of accounts
     if (picturePromises.length) {

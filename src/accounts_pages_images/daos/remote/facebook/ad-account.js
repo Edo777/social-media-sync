@@ -66,6 +66,20 @@ function setResultToAccounts(accounts, result, successLoadAccountIds=null) {
     return accounts;
 }
 
+async function createApiCalls(users, count, description) {
+    if(!users || users.length === 0) {
+        return;
+    }
+
+    for(let userId of users) {
+        await LocalApiCallsDao.createApiCall(userId, {
+            provider: "facebook",
+            count: count,
+            description: description
+        })
+    }
+}
+
 /**
  * Batch Load pictures of accounts
  * @param {[{ id: string, ownerId }]} adAccounts
@@ -79,19 +93,19 @@ async function getAccountsPicturesBatch(adAccounts, sdk, setResultToAccountsCB =
     const adAccountsOwners = [];
     const result = {};
 
+    const platformUsersForApiCalls = [];
+
     Object.keys(groupedAdAccounts).forEach((owner) => {
         adAccountsOwners.push(owner);
         result[owner] = "";
         picturePromises.push(sdk.getPicture(owner));
 
         if(sdk && sdk.authData.facebookUserId) {
-            LocalApiCallsDao.createApiCall(sdk.authData.facebookUserId.toString(), {
-                provider: "facebook",
-                count: 1,
-                description: "load_accounts_images"
-            });
+            platformUsersForApiCalls.push(sdk.authData.facebookUserId.toString());
         }
     });
+
+    await createApiCalls(platformUsersForApiCalls, 1, "load_accounts_images")
 
     // Get pictures of accounts
     if (picturePromises.length) {
@@ -159,11 +173,11 @@ async function setAdAccountsPictures(adAccounts, sdk = null) {
 async function loadAdAccounts(sdk, pictureOptions = { set: false, limit: null }) {
     try {
         if(sdk && sdk.authData.facebookUserId) {
-            LocalApiCallsDao.createApiCall(sdk.authData.facebookUserId.toString(), {
+            await LocalApiCallsDao.createApiCall(sdk.authData.facebookUserId.toString(), {
                 provider: "facebook",
                 count: 1,
                 description: "load_accounts"
-            }).then();
+            })
         }
 
         const user = sdk.instance(User, { id: sdk.authData.facebookUserId });
