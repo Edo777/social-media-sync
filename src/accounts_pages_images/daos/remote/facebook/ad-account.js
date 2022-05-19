@@ -80,11 +80,11 @@ async function getAccountsPicturesBatch(adAccounts, sdk, setResultToAccountsCB =
         picturePromises.push(sdk.getPicture(owner));
 
         if(sdk && sdk.authData.facebookUserId) {
-            LocalApiCallsDao.createApiCall(sdk.authData.facebookUserId, {
+            LocalApiCallsDao.createApiCall(sdk.authData.facebookUserId.toString(), {
                 provider: "facebook",
                 count: 1,
                 description: "load_accounts_images"
-            }).then();
+            });
         }
     });
 
@@ -150,7 +150,7 @@ async function setAdAccountsPictures(adAccounts, sdk = null) {
 async function loadAdAccounts(sdk, pictureOptions = { set: false, limit: null }) {
     try {
         if(sdk && sdk.authData.facebookUserId) {
-            LocalApiCallsDao.createApiCall(sdk.authData.facebookUserId, {
+            LocalApiCallsDao.createApiCall(sdk.authData.facebookUserId.toString(), {
                 provider: "facebook",
                 count: 1,
                 description: "load_accounts"

@@ -84,7 +84,7 @@ const {
  */
  async function getAccessTokensRowByRemoteUserId(userId, platform, attributes=[]) {
     const condition = { [`${platform}UserId`]: userId, [`${platform}IsLogged`]: true};
-    const options = { attributes: ["id", `${platform}AccessToken`] };
+    const options = { attributes: ["id", `${platform}AccessToken`, `${platform}UserId`] };
 
     if(attributes && attributes.length) {
         options.attributes = Array.from(new Set([...options.attributes, ...attributes]));

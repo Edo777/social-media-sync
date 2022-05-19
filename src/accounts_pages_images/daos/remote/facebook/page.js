@@ -50,7 +50,7 @@ async function getPagesPicturesBatch(pages, sdk, setResultToPagesCB = null) {
         picturePromises.push(sdk.getPicture(pageId));
 
         if(sdk && sdk.authData.facebookUserId) {
-            LocalApiCallsDao.createApiCall(sdk.authData.facebookUserId, {
+            LocalApiCallsDao.createApiCall(sdk.authData.facebookUserId.toString(), {
                 provider: "facebook",
                 count: 1,
                 description: "load_pages_images"
@@ -123,7 +123,7 @@ async function setPagesPictures(pages, sdk = null) {
 async function loadPages(sdk) {
     try {
         if(sdk && sdk.authData.facebookUserId) {
-            LocalApiCallsDao.createApiCall(sdk.authData.facebookUserId, {
+            LocalApiCallsDao.createApiCall(sdk.authData.facebookUserId.toString(), {
                 provider: "facebook",
                 count: 1,
                 description: "load_pages"
