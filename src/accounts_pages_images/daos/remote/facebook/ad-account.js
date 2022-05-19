@@ -138,7 +138,7 @@ async function setAdAccountsPictures(adAccounts, sdk = null) {
         const sdk = await getSdkByRemoteUser("facebook", remoteUserId);
 
         // Filter accounts for which we need load icon
-        const accountsLoadPicturesFor = groupedAdAccounts[remoteUserId].filter(acc => !successLoadPageIds[acc.adAccountId]);
+        const accountsLoadPicturesFor = groupedAdAccounts[remoteUserId].filter(acc => !successLoadAccountIds[acc.adAccountId]);
 
         if (accountsLoadPicturesFor.length && sdk && sdk.authData && sdk.authData.facebookAccessToken) {
             // Get pictures result
