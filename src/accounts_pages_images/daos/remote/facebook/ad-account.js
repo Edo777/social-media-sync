@@ -44,16 +44,21 @@ function convertDisableReason(code) {
  * @param {object} result  => {[adAccountOwnerId] : "logo" | "error"}
  * @returns {[{ id: string, ownerId: string , logo: string }]}
  */
-function setResultToAccounts(accounts, result) {
+function setResultToAccounts(accounts, result, successLoadAccountIds=null) {
     if (!Object.keys(result).length) {
         return;
     }
 
     accounts.forEach((account) => {
         const owner = account["adAccountOwnerId"];
+        const accountId = account["adAccountId"];
         if (result.hasOwnProperty(owner)) {
             if(!account["adAccountIcon"] || ["error", "not-loaded"].includes(account["adAccountIcon"]))  {
                 account["adAccountIcon"] = result[owner];
+            }
+
+            if(!["error", "not-loaded"].includes(account["adAccountIcon"]) && successLoadAccountIds && !successLoadAccountIds[accountId]) {
+                successLoadAccountIds[accountId] = true;
             }
         }
     });
@@ -126,17 +131,21 @@ async function setAdAccountsPictures(adAccounts, sdk = null) {
 
     // Group accounts by remote user
     const groupedAdAccounts = _.groupBy(adAccounts, "platformUserId");
+    const successLoadAccountIds = {};    
 
     for (const remoteUserId in groupedAdAccounts) {
         // Get sdk for remote user
         const sdk = await getSdkByRemoteUser("facebook", remoteUserId);
 
-        if (sdk && sdk.authData && sdk.authData.facebookAccessToken) {
+        // Filter accounts for which we need load icon
+        const accountsLoadPicturesFor = groupedAdAccounts[remoteUserId].filter(acc => !successLoadPageIds[acc.adAccountId]);
+
+        if (accountsLoadPicturesFor.length && sdk && sdk.authData && sdk.authData.facebookAccessToken) {
             // Get pictures result
             const result = await getAccountsPicturesBatch(groupedAdAccounts[remoteUserId], sdk);
 
             // Set that result to adAccounts original array
-            setResultToAccounts(adAccounts, result);
+            setResultToAccounts(adAccounts, result, successLoadAccountIds);
         }
     }
 }
